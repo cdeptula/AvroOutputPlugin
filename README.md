@@ -25,6 +25,9 @@ Usage
 ---
 At this time the Avro Output requires the Avro schema file to be exist before writing a file using this step.
 
+**Schema Limitations**
+Arrays are not supported by this step.  It is currently not possible to output an Avro array using the Avro Output Plugin.  All other Avro types are supported including complex records.
+
 **File Tab**
 * Filename - The name of the file to output
 * Schema filename - The name of the Avro schema file to use when writing.
