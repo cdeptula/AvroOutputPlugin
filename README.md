@@ -18,22 +18,22 @@ Installation
 
 **Manual Install**
 
-1. Place the logManager folder in the ${DI\_HOME}/plugins/steps directory
+1. Place the AvroOutputPlugin folder in the ${DI\_HOME}/plugins/steps directory
 2. Restart Spoon
 
 Usage
 ---
-At this time the Avro Output requires the Avro schema file to be exist before writing a file using this step.
+**Schema Requirements**
 
-**Schema Limitations**
+At this time the Avro Output requires the Avro schema file to be exist before writing a file using this step.
 
 Arrays are not supported by this step.  It is currently not possible to output an Avro array using the Avro Output Plugin.  All other Avro types are supported including complex records.
 
 **File Tab**
 * Filename - The name of the file to output
 * Schema filename - The name of the Avro schema file to use when writing.
-* Create parent folder - Create the parent folder if it does not exist?
-* Include stepnr in filename? - Should the step number be included in the filename?  USed for staring multiple copies of the step.
+* Create parent folder? - Create the parent folder if it does not exist.
+* Include stepnr in filename? - Should the step number be included in the filename?  Used for starting multiple copies of the step.
 * Include partition nr in filename? - Used for partitioned transformations.
 * Include date in filname? - Include the current date in the filename in yyyyMMdd format.
 * Include time in filename? - Include the current time in the filename in HHmmss format.
@@ -42,7 +42,7 @@ Arrays are not supported by this step.  It is currently not possible to output a
 
 **Fields Tab**
 * Name - The name of the field on the stream
-* Avro Path - The dot delimited path to where the field will be stored in the Avro.  (If the schema file exists and is valid, the drop down will automatically populate with the fields from the schema.)
+* Avro Path - The dot delimited path to where the field will be stored in the Avro file.  (If the schema file exists and is valid, the drop down will automatically populate with the fields from the schema.)
 * Avro Type - The type used to store the field in Avro.  Since Avro supports unions of multiple types you must select a type.  (If the schema file exists and is valid the drop down will automatically limit to types that are available for the Avro Path selected.)
 * Get Fields button - Gets the list of input fields, and tries to map them to an Avro field by an exact name match.
 * Update Types button - Based on the Avro Path for the field, will make a best guess effort for the Avro Type that should be used.
