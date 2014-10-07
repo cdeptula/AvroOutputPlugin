@@ -5,7 +5,7 @@
   <!-- set global properties for this build -->
   <property file="build.properties" />
   <property file="build.number" />
-  <property name="version" value="TRUNK_SNAPSHOT"/>
+  <property name="version" value="1.0"/>
 
   <target name="init">
     <!-- Create the time stamp -->
@@ -45,7 +45,7 @@
         description="compile the source " >
 	
     <!-- Compile the java code from ${src} into ${build} -->
-    <javac debug="on" includeantruntime="false" target="1.7" source="1.7" srcdir="${src}" destdir="${build}">
+    <javac debug="on" includeantruntime="false" target="1.6" source="1.6" srcdir="${src}" destdir="${build}">
 		<classpath>
 			<fileset dir="${pentahoclasspath}/" >
 				<include name="**/*.jar"/>
