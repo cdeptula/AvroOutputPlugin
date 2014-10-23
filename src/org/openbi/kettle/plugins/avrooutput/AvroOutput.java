@@ -48,7 +48,10 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * Converts input rows to text and then writes this text to one or more files.
@@ -84,7 +87,6 @@ public class AvroOutput extends BaseStep implements StepInterface {
       AvroOutputField aof = avroOutputFields[outputFieldIndex];
       String avroName = aof.getAvroName();
 
-      logBasic("Output Field Index for "+parentName+"    "+aof.getAvroName()+" is "+outputFieldIndex);
       if( avroName.startsWith( "$." ) )
       {
         avroName = avroName.substring( 2 );
@@ -107,7 +109,6 @@ public class AvroOutput extends BaseStep implements StepInterface {
           result.put( currentAvroPath, fieldRecord );
         } else {
           Object value = getValue( r, meta.getOutputFields()[outputFieldIndex], data.fieldnrs[outputFieldIndex] );
-          logBasic( "Adding "+ parentName +"."+avroName +" value "+value);
           if( value != null )
           {
             result.put( avroName, value );
@@ -119,6 +120,131 @@ public class AvroOutput extends BaseStep implements StepInterface {
       }
     }
     return result;
+  }
+
+  public Schema createAvroSchema( List<AvroOutputField> avroFields, String parentPath ) throws KettleException
+  {
+    String doc = meta.getDoc();
+    String recordName = meta.getRecordName();
+    String namespace = meta.getNamespace();
+
+    if( parentPath.startsWith( "$." ) )
+    {
+      parentPath = parentPath.substring( 2 );
+    }
+    List<Schema.Field> fields = new ArrayList<Schema.Field>();
+    if( ! parentPath.isEmpty() )
+    {
+      doc = "Auto generated for path "+parentPath;
+      recordName=parentPath.replaceAll( "[^A-Za-z0-9\\_]", "_" );
+    }
+    Schema result = Schema.createRecord( recordName, doc, namespace, false );
+
+    Iterator<AvroOutputField> it = avroFields.iterator();
+    String currentPath = parentPath;
+    boolean iterate = false;
+    List<AvroOutputField> subFields = new ArrayList<AvroOutputField>();
+    while( it.hasNext() )
+    {
+      AvroOutputField avroField = it.next();
+      String avroName = avroField.getAvroName();
+      if( avroName.startsWith( "$." ) )
+      {
+        avroName = avroName.substring( 2 );
+      }
+
+      String finalName = avroName;
+      if( ! parentPath.isEmpty() )
+      {
+        finalName = avroName.substring( parentPath.length() + 1 );
+      }
+
+      if( ( ! currentPath.isEmpty() ) && ( ! avroName.startsWith( currentPath ) ) )
+      {
+        Schema fieldSchema = createAvroSchema( subFields, currentPath );
+        String fieldName = currentPath;
+        if( currentPath.contains( "." ) )
+        {
+          fieldName = currentPath.substring( currentPath.lastIndexOf( "." ) + 1 );
+        }
+        Schema.Field outField = new Schema.Field( fieldName, fieldSchema, null, null );
+        fields.add( outField );
+        currentPath = parentPath;
+        subFields.clear();
+      }
+
+      //We are at the lowest level, no need to iterate.
+      if( ! finalName.contains( "." ) )
+      {
+        Schema fieldSchema = Schema.create( avroField.getAvroSchemaType() );
+        Schema outSchema;
+        if( avroField.getNullable() )
+        {
+          Schema nullSchema = Schema.create( Schema.Type.NULL );
+
+          List< Schema > unionSchema = new ArrayList<Schema>();
+          unionSchema.add( nullSchema );
+          unionSchema.add( fieldSchema );
+          outSchema = Schema.createUnion( unionSchema );
+        } else {
+          outSchema = fieldSchema;
+        }
+        Schema.Field outField = new Schema.Field( finalName, outSchema, null, null );
+        fields.add( outField );
+      } else {
+        String nextPath = finalName.substring( 0, finalName.indexOf( "." ) );
+        if( currentPath.equals( nextPath ) )
+        {
+          //do nothing
+        } else if( currentPath.isEmpty() )
+        {
+          currentPath = nextPath;
+        } else {
+          currentPath += "." + nextPath;
+        }
+        subFields.add( avroField );
+      }
+
+    }
+
+    result.setFields( fields );
+    return result;
+  }
+
+  public void writeSchemaFile() throws KettleException
+  {
+    List<AvroOutputField> fields = new ArrayList<AvroOutputField>();
+    for( AvroOutputField avroField : avroOutputFields )
+    {
+      fields.add( avroField );
+    }
+    data.avroSchema = createAvroSchema( fields, "" );
+
+    if( meta.getWriteSchemaFile() ) {
+
+      try {
+        String schemaFileName = buildFilename( environmentSubstitute( meta.getSchemaFileName() ), true );
+        OutputStream outputStream = getOutputStream( schemaFileName, getTransMeta(), false );
+
+        if ( log.isDetailed() ) {
+          logDetailed( "Opening output stream in default encoding" );
+        }
+        OutputStream schemaWriter = new BufferedOutputStream( outputStream, 5000 );
+
+        if ( log.isDetailed() ) {
+          logDetailed( "Opened new file with name [" + schemaFileName + "]" );
+        }
+
+        schemaWriter.write( data.avroSchema.toString( true ).getBytes() );
+        schemaWriter.close();
+        if ( log.isDetailed() ) {
+          logDetailed( "Closed schema file with name [" + schemaFileName + "]" );
+        }
+
+      } catch ( Exception e ) {
+        throw new KettleException( "Error opening new file : " + e.toString() );
+      }
+    }
   }
 
   public synchronized boolean processRow( StepMetaInterface smi, StepDataInterface sdi ) throws KettleException {
@@ -135,13 +261,18 @@ public class AvroOutput extends BaseStep implements StepInterface {
       Arrays.sort( avroOutputFields );
       try
       {
-        data.avroSchema = new Parser().parse( new File( meta.getSchemaFileName() ) );
+        if( meta.getCreateSchemaFile() )
+        {
+          writeSchemaFile();
+        } else {
+          data.avroSchema = new Parser().parse( new File( meta.getSchemaFileName() ) );
+        }
         data.datumWriter = new GenericDatumWriter<GenericRecord>( data.avroSchema );
         data.dataFileWriter = new DataFileWriter<GenericRecord>( data.datumWriter );
         data.dataFileWriter.create( data.avroSchema, data.writer );
       } catch ( IOException ex )
       {
-        logError( "Could not open file " + meta.getSchemaFileName(), ex );
+        logError( "Could not open or create file " + meta.getSchemaFileName(), ex );
         setErrors( 1L );
         stopAll();
       }

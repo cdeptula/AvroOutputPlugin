@@ -63,6 +63,21 @@ public class AvroOutputMeta extends BaseStepMeta implements StepMetaInterface {
   /** The base name of the schema file */
   private String schemaFileName;
 
+  /** Flag: create schema file, default to false */
+  private boolean createSchemaFile = false;
+
+  /** Flag: write schema file, default to true */
+  private boolean writeSchemaFile = true;
+
+  /** The namespace for the schema file */
+  private String namespace;
+
+  /** The record name for the schema file */
+  private String recordName;
+
+  /** The documentation for the schema file */
+  private String doc;
+
   /** Flag: create parent folder, default to true */
   private boolean createParentFolder = true;
 
@@ -93,6 +108,91 @@ public class AvroOutputMeta extends BaseStepMeta implements StepMetaInterface {
   public AvroOutputMeta() {
     super(); // allocate BaseStepMeta
     allocate(0);
+  }
+
+  /**
+   *
+   * @return Returns the createSchemaFile
+   */
+  public boolean getCreateSchemaFile()
+  {
+    return createSchemaFile;
+  }
+
+  /**
+   *
+   * @param createSchemaFile
+   *          The createSchemaFile to set.
+   */
+  public void setCreateSchemaFile( boolean createSchemaFile )
+  {
+    this.createSchemaFile = createSchemaFile;
+  }
+
+  /**
+   *
+   * @return Returns whether the schema should be persisted
+   */
+  public boolean getWriteSchemaFile() {
+    return writeSchemaFile;
+  }
+
+  /**
+   *
+   * @param writeSchemaFile whether the schema file should be persisted
+   */
+  public void setWriteSchemaFile( boolean writeSchemaFile ) {
+    this.writeSchemaFile = writeSchemaFile;
+  }
+
+  /**
+   *
+   * @return Returns the namespace.
+   */
+  public String getNamespace()
+  {
+    return namespace;
+  }
+
+  /**
+   *
+   * @param namespace The namespace to set.
+   */
+  public void setNamespace( String namespace )
+  {
+    this.namespace = namespace;
+  }
+
+  /**
+   *
+   * @return Returns the doc
+   */
+  public String getDoc() {
+    return doc;
+  }
+
+  /**
+   *
+   * @param doc The doc to set.
+   */
+  public void setDoc( String doc ) {
+    this.doc = doc;
+  }
+
+  /**
+   *
+   * @return Returns the record name
+   */
+  public String getRecordName() {
+    return recordName;
+  }
+
+  /**
+   *
+   * @param recordName The record name to set.
+   */
+  public void setRecordName( String recordName ) {
+    this.recordName = recordName;
   }
 
   /**
@@ -273,6 +373,16 @@ public class AvroOutputMeta extends BaseStepMeta implements StepMetaInterface {
     try {
       // Default createparentfolder to true if the tag is missing
       String createParentFolderTagValue = XMLHandler.getTagValue( stepnode, "create_parent_folder" );
+      String writeSchemaFileTagValue = XMLHandler.getTagValue( stepnode, "write_schema_file" );
+      String createSchemaFileTagValue = XMLHandler.getTagValue( stepnode, "create_schema_file" );
+      writeSchemaFile =
+        writeSchemaFileTagValue == null ? false : "Y".equalsIgnoreCase( writeSchemaFileTagValue );
+      createSchemaFile =
+        ( createSchemaFileTagValue == null ) ? false : "Y".equalsIgnoreCase( createSchemaFileTagValue );
+      namespace = XMLHandler.getTagValue( stepnode, "namespace" );
+      doc = XMLHandler.getTagValue( stepnode, "doc" );
+      recordName = XMLHandler.getTagValue( stepnode, "recordname" );
+
       createParentFolder =
         ( createParentFolderTagValue == null ) ? true : "Y".equalsIgnoreCase( createParentFolderTagValue );
       
@@ -305,6 +415,8 @@ public class AvroOutputMeta extends BaseStepMeta implements StepMetaInterface {
         outputFields[i].setName( XMLHandler.getTagValue( fnode, "name" ) );
         outputFields[i].setAvroName( XMLHandler.getTagValue( fnode, "avroname" ) );
         outputFields[i].setAvroType( Const.toInt( XMLHandler.getTagValue( fnode, "avrotype" ), 0 ) );
+        outputFields[i].setNullable( XMLHandler.getTagValue( fnode, "nullable" ) == null ? true :
+          "Y".equalsIgnoreCase( XMLHandler.getTagValue( fnode, "nullable" ) ) );
       }
     } catch ( Exception e ) {
       throw new KettleXMLException( "Unable to load step info from XML", e );
@@ -313,6 +425,10 @@ public class AvroOutputMeta extends BaseStepMeta implements StepMetaInterface {
 
   public void setDefault() {
     createParentFolder = true; // Default createparentfolder to true
+    createSchemaFile = false;
+    writeSchemaFile = true;
+    namespace = "namespace";
+    recordName = "recordname";
     specifyingFormat = false;
     dateTimeFormat = null;
     fileName = "file.avro";
@@ -380,6 +496,11 @@ public class AvroOutputMeta extends BaseStepMeta implements StepMetaInterface {
   public String getXML() {
     StringBuffer retval = new StringBuffer( 800 );
 
+    retval.append( "    " + XMLHandler.addTagValue( "create_schema_file", createSchemaFile ) );
+    retval.append( "    " + XMLHandler.addTagValue( "write_schema_file", writeSchemaFile ) );
+    retval.append( "    " + XMLHandler.addTagValue( "namespace", namespace ) );
+    retval.append( "    " + XMLHandler.addTagValue( "doc", doc ) );
+    retval.append( "    " + XMLHandler.addTagValue( "recordname", recordName ) );
     retval.append( "    " + XMLHandler.addTagValue( "create_parent_folder", createParentFolder ) );
     retval.append( "      " ).append( XMLHandler.addTagValue( "filename", fileName ) );
     retval.append( "      " ).append( XMLHandler.addTagValue( "schemafilename", schemaFileName ) );
@@ -401,6 +522,7 @@ public class AvroOutputMeta extends BaseStepMeta implements StepMetaInterface {
         retval.append( "        " ).append( XMLHandler.addTagValue( "name", field.getName() ) );
         retval.append( "        " ).append( XMLHandler.addTagValue( "avroname", field.getAvroName() ) );
         retval.append( "        " ).append( XMLHandler.addTagValue( "avrotype", field.getAvroType() ) );
+        retval.append( "        " ).append( XMLHandler.addTagValue( "nullable", field.getNullable() ) );
         retval.append( "      </field>" ).append( Const.CR );
       }
     }
@@ -413,6 +535,11 @@ public class AvroOutputMeta extends BaseStepMeta implements StepMetaInterface {
     throws KettleException {
     try {
       createParentFolder = rep.getStepAttributeBoolean( id_step, "create_parent_folder" );
+      namespace = rep.getStepAttributeString( id_step, "namespace" );
+      doc = rep.getStepAttributeString( id_step, "doc" );
+      recordName = rep.getStepAttributeString( id_step, "recordname" );
+      createSchemaFile = rep.getStepAttributeBoolean( id_step, "create_schema_file" );
+      writeSchemaFile = rep.getStepAttributeBoolean( id_step, "write_schema_file" );
       fileName = rep.getStepAttributeString( id_step, "file_name" );
       schemaFileName = rep.getStepAttributeString( id_step, "schemafilename" );
       stepNrInFilename = rep.getStepAttributeBoolean( id_step, "file_add_stepnr" );
@@ -440,6 +567,7 @@ public class AvroOutputMeta extends BaseStepMeta implements StepMetaInterface {
         outputFields[i].setAvroName( rep.getStepAttributeString( id_step, i, "avroname" ) );
         Long avroType = rep.getStepAttributeInteger( id_step, i, "avrotype" );
         outputFields[i].setAvroType( avroType.intValue() );
+        outputFields[i].setNullable( rep.getStepAttributeBoolean( id_step, i, "nullable" ) );
       }
 
     } catch ( Exception e ) {
@@ -450,6 +578,11 @@ public class AvroOutputMeta extends BaseStepMeta implements StepMetaInterface {
   public void saveRep( Repository rep, IMetaStore metaStore, ObjectId id_transformation, ObjectId id_step )
     throws KettleException {
     try {
+      rep.saveStepAttribute( id_transformation, id_step, "create_schema_file", createSchemaFile );
+      rep.saveStepAttribute( id_transformation, id_step, "write_schema_file", writeSchemaFile );
+      rep.saveStepAttribute( id_transformation, id_step, "namespace", namespace );
+      rep.saveStepAttribute( id_transformation, id_step, "doc", doc );
+      rep.saveStepAttribute( id_transformation, id_step, "recordname", recordName );
       rep.saveStepAttribute( id_transformation, id_step, "create_parent_folder", createParentFolder );
       rep.saveStepAttribute( id_transformation, id_step, "file_name", fileName );
       rep.saveStepAttribute( id_transformation, id_step, "schemaFileName", schemaFileName );
@@ -468,6 +601,7 @@ public class AvroOutputMeta extends BaseStepMeta implements StepMetaInterface {
         rep.saveStepAttribute( id_transformation, id_step, i, "field_name", field.getName() );
         rep.saveStepAttribute( id_transformation, id_step, i, "avroname", field.getAvroName() );
         rep.saveStepAttribute( id_transformation, id_step, i, "avrotype", field.getAvroType() );
+        rep.saveStepAttribute( id_transformation, id_step, i, "nullable", field.getNullable() );
       }
     } catch ( Exception e ) {
       throw new KettleException( "Unable to save step information to the repository for id_step=" + id_step, e );
