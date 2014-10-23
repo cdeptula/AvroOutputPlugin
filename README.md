@@ -25,12 +25,15 @@ Usage
 ---
 **Schema Requirements**
 
-At this time the Avro Output requires the Avro schema file to be exist before writing a file using this step.
-
 Arrays are not supported by this step.  It is currently not possible to output an Avro array using the Avro Output Plugin.  All other Avro types are supported including complex records.
 
 **File Tab**
 * Filename - The name of the file to output
+* Automatically create schema? - Should the step automatically create the schema for the output records?
+* Write schema to file? - Should the step persist the automatically created schema to a file?
+* Avro namespace - The namespace for the automatically created schema.
+* Avro record name - The record name for the automatically created schema.
+* Avro documentation - The documentation for the automatically created schema.
 * Schema filename - The name of the Avro schema file to use when writing.
 * Create parent folder? - Create the parent folder if it does not exist.
 * Include stepnr in filename? - Should the step number be included in the filename?  Used for starting multiple copies of the step.
@@ -42,8 +45,9 @@ Arrays are not supported by this step.  It is currently not possible to output a
 
 **Fields Tab**
 * Name - The name of the field on the stream
-* Avro Path - The dot delimited path to where the field will be stored in the Avro file.  (If the schema file exists and is valid, the drop down will automatically populate with the fields from the schema.)
+* Avro Path - The dot delimited path to where the field will be stored in the Avro file.  (If this is empty the stream name will be used.  If the schema file exists and is valid, the drop down will automatically populate with the fields from the schema.)
 * Avro Type - The type used to store the field in Avro.  Since Avro supports unions of multiple types you must select a type.  (If the schema file exists and is valid the drop down will automatically limit to types that are available for the Avro Path selected.)
+* Nullable? - Should the field be nullable in the Avro schema.  Only used if "automatically create avro schema" is checked.
 * Get Fields button - Gets the list of input fields, and tries to map them to an Avro field by an exact name match.
 * Update Types button - Based on the Avro Path for the field, will make a best guess effort for the Avro Type that should be used.
 
