@@ -48,6 +48,8 @@ public class AvroOutputField implements Cloneable, Comparable<AvroOutputField> {
 
   private int avroType;
 
+  private boolean nullable;
+
   public final static int AVRO_TYPE_NONE = 0;
   public final static int AVRO_TYPE_BOOLEAN = 1;
   public final static int AVRO_TYPE_DOUBLE = 2;
@@ -58,10 +60,11 @@ public class AvroOutputField implements Cloneable, Comparable<AvroOutputField> {
 
   private static String[] avroDescriptions = {"","Boolean","Double","Float","Int","Long","String"};
 
-  public AvroOutputField( String name, String avroName, int avroType ) {
+  public AvroOutputField( String name, String avroName, int avroType, boolean nullable ) {
     this.name = name;
     this.avroName = avroName;
     this.avroType = avroType;
+    this.nullable = nullable;
   }
 
   public AvroOutputField() {
@@ -149,6 +152,24 @@ public class AvroOutputField implements Cloneable, Comparable<AvroOutputField> {
   }
 
   /**
+   * Return if the field is nullable in the Avro schema.
+   * @return nullable
+   */
+  public boolean getNullable()
+  {
+    return nullable;
+  }
+
+  /**
+   * Set if the field is nullable or not.
+   * @param nullable
+   */
+  public void setNullable( boolean nullable )
+  {
+    this.nullable = nullable;
+  }
+
+  /**
    * Return the array of all Avro datatype descriptions.
    * @return avroDescriptions
    */
@@ -194,7 +215,7 @@ public class AvroOutputField implements Cloneable, Comparable<AvroOutputField> {
     }
   }
 
-  public int getDefaultAvroType( int pentahoType )
+  public static int getDefaultAvroType( int pentahoType )
   {
     switch( pentahoType ) {
       case ValueMetaInterface.TYPE_NUMBER :
@@ -206,6 +227,26 @@ public class AvroOutputField implements Cloneable, Comparable<AvroOutputField> {
         return AVRO_TYPE_BOOLEAN;
       default:
         return AVRO_TYPE_STRING;
+    }
+  }
+
+  public Schema.Type getAvroSchemaType() throws KettleException
+  {
+    switch( avroType ) {
+      case AVRO_TYPE_BOOLEAN :
+        return Schema.Type.BOOLEAN;
+      case AVRO_TYPE_DOUBLE :
+        return Schema.Type.DOUBLE;
+      case AVRO_TYPE_FLOAT :
+        return Schema.Type.FLOAT;
+      case AVRO_TYPE_INT :
+        return Schema.Type.INT;
+      case AVRO_TYPE_LONG :
+        return Schema.Type.LONG;
+      case AVRO_TYPE_STRING :
+        return Schema.Type.STRING;
+      default :
+        throw new KettleException( "Unsupported Avro Type " + avroDescriptions[ avroType ] );
     }
   }
 

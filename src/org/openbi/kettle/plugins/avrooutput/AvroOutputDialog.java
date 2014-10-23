@@ -81,6 +81,9 @@ import java.util.Set;
 public class AvroOutputDialog extends BaseStepDialog implements StepDialogInterface {
   private static Class<?> PKG = AvroOutputMeta.class; // for i18n purposes, needed by Translator2!!
 
+  private static final String[] YES_NO_COMBO = new String[] { BaseMessages.getString( PKG, "System.Combo.No" ),
+    BaseMessages.getString( PKG, "System.Combo.Yes" ) };
+
   private CTabFolder wTabFolder;
   private FormData fdTabFolder;
 
@@ -125,6 +128,26 @@ public class AvroOutputDialog extends BaseStepDialog implements StepDialogInterf
   private Label wlSpecifyFormat;
   private Button wSpecifyFormat;
   private FormData fdlSpecifyFormat, fdSpecifyFormat;
+
+  private Label wlCreateSchemaFile;
+  private Button wCreateSchemaFile;
+  private FormData fdlCreateSchemaFile, fdCreateSchemaFile;
+
+  private Label wlWriteSchemaFile;
+  private Button wWriteSchemaFile;
+  private FormData fdlWriteSchemaFile, fdWriteSchemaFile;
+
+  private Label wlRecordName;
+  private TextVar wRecordName;
+  private FormData fdlRecordName, fdRecordName;
+
+  private Label wlNamespace;
+  private TextVar wNamespace;
+  private FormData fdlNamespace, fdNamespace;
+
+  private Label wlDoc;
+  private TextVar wDoc;
+  private FormData fdlDoc, fdDoc;
 
   private TableView wFields;
   private FormData fdFields;
@@ -244,7 +267,127 @@ public class AvroOutputDialog extends BaseStepDialog implements StepDialogInterf
     fdFilename.right = new FormAttachment( wbFilename, -margin );
     wFilename.setLayoutData( fdFilename );
     
-  // Schema Filename line
+
+    // Create Schema File
+    //
+    wlCreateSchemaFile = new Label( wFileComp, SWT.RIGHT );
+    wlCreateSchemaFile.setText( BaseMessages.getString( PKG, "AvroOutputDialog.CreateSchemaFile.Label" ) );
+    props.setLook( wlCreateSchemaFile );
+    fdlCreateSchemaFile = new FormData();
+    fdlCreateSchemaFile.left = new FormAttachment( 0, 0 );
+    fdlCreateSchemaFile.top = new FormAttachment( wFilename, margin );
+    fdlCreateSchemaFile.right = new FormAttachment( middle, -margin );
+    wlCreateSchemaFile.setLayoutData( fdlCreateSchemaFile );
+    wCreateSchemaFile = new Button( wFileComp, SWT.CHECK );
+    wCreateSchemaFile.setToolTipText( BaseMessages.getString( PKG, "AvroOutputDialog.CreateSchemaFile.Tooltip" ) );
+    props.setLook( wCreateSchemaFile );
+    fdCreateSchemaFile = new FormData();
+    fdCreateSchemaFile.left = new FormAttachment( middle, 0 );
+    fdCreateSchemaFile.top = new FormAttachment( wFilename, margin );
+    fdCreateSchemaFile.right = new FormAttachment( 100, 0 );
+    wCreateSchemaFile.setLayoutData( fdCreateSchemaFile );
+    wCreateSchemaFile.addSelectionListener( new SelectionAdapter() {
+      public void widgetSelected( SelectionEvent e ) {
+        input.setChanged();
+        setCreateSchemaFile();
+      }
+    } );
+
+    // Write Schema File
+    //
+    wlWriteSchemaFile = new Label( wFileComp, SWT.RIGHT );
+    wlWriteSchemaFile.setText( BaseMessages.getString( PKG, "AvroOutputDialog.WriteSchemaFile.Label" ) );
+    props.setLook( wlWriteSchemaFile );
+    fdlWriteSchemaFile = new FormData();
+    fdlWriteSchemaFile.left = new FormAttachment( 0, 0 );
+    fdlWriteSchemaFile.top = new FormAttachment( wCreateSchemaFile, margin );
+    fdlWriteSchemaFile.right = new FormAttachment( middle, -margin );
+    wlWriteSchemaFile.setLayoutData( fdlWriteSchemaFile );
+    wWriteSchemaFile = new Button( wFileComp, SWT.CHECK );
+    wWriteSchemaFile.setToolTipText( BaseMessages.getString( PKG, "AvroOutputDialog.WriteSchemaFile.Tooltip" ) );
+    props.setLook( wWriteSchemaFile );
+    fdWriteSchemaFile = new FormData();
+    fdWriteSchemaFile.left = new FormAttachment( middle, 0 );
+    fdWriteSchemaFile.top = new FormAttachment( wCreateSchemaFile, margin );
+    fdWriteSchemaFile.right = new FormAttachment( 100, 0 );
+    wWriteSchemaFile.setLayoutData( fdWriteSchemaFile );
+    wWriteSchemaFile.addSelectionListener( new SelectionAdapter() {
+      public void widgetSelected( SelectionEvent e ) {
+        input.setChanged();
+        setCreateSchemaFile();
+      }
+    } );
+
+    // Namespace
+    //
+    wlNamespace = new Label( wFileComp, SWT.RIGHT );
+    wlNamespace.setText( BaseMessages.getString( PKG, "AvroOutputDialog.Namespace.Label" ) );
+    props.setLook( wlNamespace );
+    fdlNamespace = new FormData();
+    fdlNamespace.left = new FormAttachment( 0, 0 );
+    fdlNamespace.top = new FormAttachment( wWriteSchemaFile, margin );
+    fdlNamespace.right = new FormAttachment( middle, -margin );
+    wlNamespace.setLayoutData( fdlNamespace );
+    wNamespace = new TextVar( transMeta, wFileComp, SWT.SINGLE | SWT.LEFT | SWT.BORDER );
+    props.setLook( wNamespace );
+    fdNamespace = new FormData();
+    fdNamespace.left = new FormAttachment( middle, 0 );
+    fdNamespace.top = new FormAttachment( wWriteSchemaFile, margin );
+    fdNamespace.right = new FormAttachment( 100, 0 );
+    wNamespace.setLayoutData( fdNamespace );
+    wNamespace.addSelectionListener( new SelectionAdapter() {
+      public void widgetSelected( SelectionEvent e ) {
+        input.setChanged();
+      }
+    } );
+
+    // Record Name
+    //
+    wlRecordName = new Label( wFileComp, SWT.RIGHT );
+    wlRecordName.setText( BaseMessages.getString( PKG, "AvroOutputDialog.RecordName.Label" ) );
+    props.setLook( wlRecordName );
+    fdlRecordName = new FormData();
+    fdlRecordName.left = new FormAttachment( 0, 0 );
+    fdlRecordName.top = new FormAttachment( wNamespace, margin );
+    fdlRecordName.right = new FormAttachment( middle, -margin );
+    wlRecordName.setLayoutData( fdlRecordName );
+    wRecordName = new TextVar( transMeta, wFileComp, SWT.SINGLE | SWT.LEFT | SWT.BORDER );
+    props.setLook( wRecordName );
+    fdRecordName = new FormData();
+    fdRecordName.left = new FormAttachment( middle, 0 );
+    fdRecordName.top = new FormAttachment( wNamespace, margin );
+    fdRecordName.right = new FormAttachment( 100, 0 );
+    wRecordName.setLayoutData( fdRecordName );
+    wRecordName.addSelectionListener( new SelectionAdapter() {
+      public void widgetSelected( SelectionEvent e ) {
+        input.setChanged();
+      }
+    } );
+
+    // Doc
+    //
+    wlDoc = new Label( wFileComp, SWT.RIGHT );
+    wlDoc.setText( BaseMessages.getString( PKG, "AvroOutputDialog.Doc.Label" ) );
+    props.setLook( wlDoc );
+    fdlDoc = new FormData();
+    fdlDoc.left = new FormAttachment( 0, 0 );
+    fdlDoc.top = new FormAttachment( wRecordName, margin );
+    fdlDoc.right = new FormAttachment( middle, -margin );
+    wlDoc.setLayoutData( fdlDoc );
+    wDoc = new TextVar( transMeta, wFileComp, SWT.SINGLE | SWT.LEFT | SWT.BORDER );
+    props.setLook( wDoc );
+    fdDoc = new FormData();
+    fdDoc.left = new FormAttachment( middle, 0 );
+    fdDoc.top = new FormAttachment( wRecordName, margin );
+    fdDoc.right = new FormAttachment( 100, 0 );
+    wDoc.setLayoutData( fdDoc );
+    wDoc.addSelectionListener( new SelectionAdapter() {
+      public void widgetSelected( SelectionEvent e ) {
+        input.setChanged();
+      }
+    } );
+
+    // Schema Filename line
 
     ModifyListener lsSchema = new ModifyListener() {
       public void modifyText( ModifyEvent e ) {
@@ -257,7 +400,7 @@ public class AvroOutputDialog extends BaseStepDialog implements StepDialogInterf
     props.setLook( wlSchema );
     fdlSchema = new FormData();
     fdlSchema.left = new FormAttachment( 0, 0 );
-    fdlSchema.top = new FormAttachment( wFilename, margin );
+    fdlSchema.top = new FormAttachment( wDoc, margin );
     fdlSchema.right = new FormAttachment( middle, -margin );
     wlSchema.setLayoutData( fdlSchema );
 
@@ -266,7 +409,7 @@ public class AvroOutputDialog extends BaseStepDialog implements StepDialogInterf
     wbSchema.setText( BaseMessages.getString( PKG, "System.Button.Browse" ) );
     fdbSchema = new FormData();
     fdbSchema.right = new FormAttachment( 100, 0 );
-    fdbSchema.top = new FormAttachment( wFilename, 0 );
+    fdbSchema.top = new FormAttachment( wDoc, 0 );
     wbSchema.setLayoutData( fdbSchema );
 
     wSchema = new TextVar( transMeta, wFileComp, SWT.SINGLE | SWT.LEFT | SWT.BORDER );
@@ -275,11 +418,12 @@ public class AvroOutputDialog extends BaseStepDialog implements StepDialogInterf
     wSchema.addModifyListener( lsSchema );
     fdSchema = new FormData();
     fdSchema.left = new FormAttachment( middle, 0 );
-    fdSchema.top = new FormAttachment( wFilename, margin );
+    fdSchema.top = new FormAttachment( wDoc, margin );
     fdSchema.right = new FormAttachment( wbSchema, -margin );
     wSchema.setLayoutData( fdSchema );
 
-    // Output to servlet (browser, ws)
+
+    // Create Parent Folder?
     //
     wlCreateParentFolder = new Label( wFileComp, SWT.RIGHT );
     wlCreateParentFolder.setText( BaseMessages.getString( PKG, "AvroOutputDialog.CreateParentFolder.Label" ) );
@@ -431,7 +575,7 @@ public class AvroOutputDialog extends BaseStepDialog implements StepDialogInterf
     fdDateTimeFormat = new FormData();
     fdDateTimeFormat.left = new FormAttachment( middle, 0 );
     fdDateTimeFormat.top = new FormAttachment( wSpecifyFormat, margin );
-    fdDateTimeFormat.right = new FormAttachment( 100, 0 );
+    fdDateTimeFormat.right = new FormAttachment( 75, 0 );
     wDateTimeFormat.setLayoutData( fdDateTimeFormat );
     String[] dats = Const.getDateFormats();
     for ( String dat : dats ) {
@@ -505,7 +649,7 @@ public class AvroOutputDialog extends BaseStepDialog implements StepDialogInterf
     fdUpdateTypes.bottom = new FormAttachment( 100, 0 );
     wUpdateTypes.setLayoutData( fdUpdateTypes );
 
-    final int FieldsCols = 3;
+    final int FieldsCols = 4;
     final int FieldsRows = input.getOutputFields().length;
 
     colinf = new ColumnInfo[FieldsCols];
@@ -521,11 +665,15 @@ public class AvroOutputDialog extends BaseStepDialog implements StepDialogInterf
       new ColumnInfo(
         BaseMessages.getString( PKG, "AvroOutputDialog.AvroType.Column" ),
         ColumnInfo.COLUMN_TYPE_CCOMBO, AvroOutputField.getAvroTypeArraySorted(), false );
+    colinf[3] =
+      new ColumnInfo(
+        BaseMessages.getString( PKG, "AvroOutputDialog.Nullable.Column" ),
+        ColumnInfo.COLUMN_TYPE_CCOMBO, YES_NO_COMBO, false );
 
     colinf[2].setComboValuesSelectionListener( new ComboValuesSelectionListener( ) {
       @Override public String[] getComboValues( TableItem tableItem, int rowNr, int colNr ) {
         String[] comboValues = new String[] {};
-        if( validSchema ) {
+        if( !( wCreateSchemaFile.getSelection() ) && validSchema ) {
           String avroColumn = tableItem.getText( colNr - 1 );
           String streamColumn = tableItem.getText( colNr - 2 );
           avroColumn = ( avroColumn != null ? avroColumn : streamColumn );
@@ -637,7 +785,7 @@ public class AvroOutputDialog extends BaseStepDialog implements StepDialogInterf
     Listener lsUpdateTypes = new Listener() {
       public void handleEvent( Event e )
       {
-        updateTypes( wFields, 1, 2, new int[] {3} );
+        updateTypes();
       }
     };
 
@@ -690,7 +838,7 @@ public class AvroOutputDialog extends BaseStepDialog implements StepDialogInterf
     wbSchema.addSelectionListener( new SelectionAdapter() {
         public void widgetSelected( SelectionEvent e ) {
           FileDialog dialog = new FileDialog( shell, SWT.SAVE );
-          dialog.setFilterExtensions( new String[] { "*.json", "*" } );
+          dialog.setFilterExtensions( new String[] { "*.json,*.avsc", "*" } );
           if ( wSchema.getText() != null ) {
             dialog.setFileName( transMeta.environmentSubstitute( wSchema.getText() ) );
           }
@@ -729,6 +877,7 @@ public class AvroOutputDialog extends BaseStepDialog implements StepDialogInterf
 
     getData();
     input.setChanged( changed );
+    setCreateSchemaFile();
 
     shell.open();
     while ( !shell.isDisposed() ) {
@@ -883,6 +1032,20 @@ public class AvroOutputDialog extends BaseStepDialog implements StepDialogInterf
     colinf[0].setComboValues( fieldNames );
   }
 
+  private void setCreateSchemaFile() {
+    wDoc.setEnabled( wCreateSchemaFile.getSelection() );
+    wNamespace.setEnabled( wCreateSchemaFile.getSelection() );
+    wRecordName.setEnabled( wCreateSchemaFile.getSelection() );
+    wWriteSchemaFile.setEnabled( wCreateSchemaFile.getSelection() );
+    if( wWriteSchemaFile.getSelection() || (! wCreateSchemaFile.getSelection() ) ) {
+      wSchema.setEnabled( true );
+      wbSchema.setEnabled( true );
+    } else {
+      wSchema.setEnabled( false );
+      wbSchema.setEnabled( false );
+    }
+  }
+
   private void setDateTimeFormat() {
     if ( wSpecifyFormat.getSelection() ) {
       wAddDate.setSelection( false );
@@ -908,7 +1071,23 @@ public class AvroOutputDialog extends BaseStepDialog implements StepDialogInterf
     	wSchema.setText( input.getSchemaFileName() );
       updateSchema();
     }
+
+    if ( input.getNamespace() != null )
+    {
+      wNamespace.setText( input.getNamespace() );
+    }
+    if ( input.getDoc() != null )
+    {
+      wDoc.setText( input.getDoc() );
+    }
+    if ( input.getRecordName() != null )
+    {
+      wRecordName.setText( input.getRecordName() );
+    }
+
     wCreateParentFolder.setSelection( input.getCreateParentFolder() );
+    wCreateSchemaFile.setSelection( input.getCreateSchemaFile() );
+    wWriteSchemaFile.setSelection( input.getWriteSchemaFile() );
 
     wAddDate.setSelection( input.getDateInFilename() );
     wAddTime.setSelection( input.getTimeInFilename() );
@@ -933,6 +1112,12 @@ public class AvroOutputDialog extends BaseStepDialog implements StepDialogInterf
       if ( field.getAvroTypeDesc() != null ) {
         item.setText( 3, field.getAvroTypeDesc() );
       }
+      if( field.getNullable() )
+      {
+        item.setText( 4, "Y" );
+      } else {
+        item.setText( 4, "N" );
+      }
     }
 
     wFields.optWidth( true );
@@ -952,6 +1137,11 @@ public class AvroOutputDialog extends BaseStepDialog implements StepDialogInterf
   private void getInfo( AvroOutputMeta tfoi ) {
     tfoi.setFileName( wFilename.getText() );
     tfoi.setSchemaFileName( wSchema.getText() );
+    tfoi.setCreateSchemaFile( wCreateSchemaFile.getSelection() );
+    tfoi.setWriteSchemaFile( wWriteSchemaFile.getSelection() );
+    tfoi.setNamespace( wNamespace.getText() );
+    tfoi.setRecordName( wRecordName.getText() );
+    tfoi.setDoc( wDoc.getText() );
     tfoi.setCreateParentFolder( wCreateParentFolder.getSelection() );
     tfoi.setStepNrInFilename( wAddStepnr.getSelection() );
     tfoi.setPartNrInFilename( wAddPartnr.getSelection() );
@@ -974,6 +1164,12 @@ public class AvroOutputDialog extends BaseStepDialog implements StepDialogInterf
       field.setName( item.getText( 1 ) );
       field.setAvroName( item.getText( 2 ) );
       field.setAvroType( item.getText( 3 ) );
+      boolean nullable = "Y".equalsIgnoreCase( item.getText( 4 ) );
+      if( item.getText(4).isEmpty() )
+      {
+        nullable = true;
+      }
+      field.setNullable( nullable );
 
       //CHECKSTYLE:Indentation:OFF
       tfoi.getOutputFields()[i] = field;
@@ -990,6 +1186,24 @@ public class AvroOutputDialog extends BaseStepDialog implements StepDialogInterf
     getInfo( input );
 
     dispose();
+  }
+
+  private void updateTypes() {
+      try {
+        RowMetaInterface r = transMeta.getPrevStepFields( stepname );
+        if ( r != null ) {
+          TableItemInsertListener listener = new TableItemInsertListener() {
+            public boolean tableItemInserted( TableItem tableItem, ValueMetaInterface v ) {
+
+              return true;
+            }
+          };
+          updateTypes( r, wFields, 1, 2, new int[] { 3 } );
+        }
+      } catch ( KettleException ke ) {
+        new ErrorDialog( shell, BaseMessages.getString( PKG, "System.Dialog.GetFieldsFailed.Title" ), BaseMessages
+          .getString( PKG, "System.Dialog.GetFieldsFailed.Message" ), ke );
+      }
   }
 
   private void get() {
@@ -1011,16 +1225,16 @@ public class AvroOutputDialog extends BaseStepDialog implements StepDialogInterf
 
   }
 
-  public void updateTypes( TableView tableView, int nameColumn, int avroNameColumn, int[] typeColumn )
+  public void updateTypes( RowMetaInterface row, TableView tableView, int nameColumn, int avroNameColumn, int[] typeColumn )
   {
-    if( validSchema ) {
+    boolean createSchemaFile = wCreateSchemaFile.getSelection();
+    if( validSchema || createSchemaFile ) {
       Table table = tableView.table;
 
       boolean typesPopulated = false;
       for ( int i = 0; i < table.getItemCount(); i++ ) {
         TableItem tableItem = table.getItem( i );
-        String avroName = !( tableItem.getText( avroNameColumn ).isEmpty() ) ? tableItem.getText( avroNameColumn ) :
-          tableItem.getText( nameColumn );
+
         if ( !typesPopulated ) {
           for ( int c = 0; c < typeColumn.length; c++ ) {
             if ( !Const.isEmpty( tableItem.getText( typeColumn[ c ] ) ) ) {
@@ -1060,7 +1274,9 @@ public class AvroOutputDialog extends BaseStepDialog implements StepDialogInterf
       for ( int i = 0; i < table.getItemCount(); i++ ) {
         TableItem tableItem = table.getItem( i );
         String avroName = !( tableItem.getText( 2 ).isEmpty() ) ? tableItem.getText( 2 ) : tableItem.getText( 1 );
-        if ( !( avroName.isEmpty() ) ) {
+        String streamName = tableItem.getText( 1 );
+        logBasic("Stream name is "+streamName );
+        if ( !( avroName.isEmpty() ) && !( createSchemaFile ) ) {
           Schema fieldSchema = getFieldSchema( avroName );
           if ( fieldSchema != null ) {
             String[] types = AvroOutputField.mapAvroType( fieldSchema, fieldSchema.getType() );
@@ -1082,7 +1298,21 @@ public class AvroOutputDialog extends BaseStepDialog implements StepDialogInterf
               tableItem.setText( typeColumn[ c ], "" );
             }
           }
+        } else if( createSchemaFile && !( streamName.isEmpty() ) ) { //create schema file
+          logBasic("Create File");
+          ValueMetaInterface v = row.searchValueMeta( streamName ); //TODO: This is returning null, need to figure out why
+          logBasic( v != null ? v.getName() : "Value Meta is null" );
+          String avroType = "";
+          if( v != null ) {
+            avroType = AvroOutputField.getAvroTypeDesc( AvroOutputField.getDefaultAvroType( v.getType() ) );
+          }
+          for ( int aTypeColumn : typeColumn ) {
+            if ( choice == 1 || ( choice == 0 && ( tableItem.getText( aTypeColumn ).isEmpty() ) ) ) {
+              tableItem.setText( aTypeColumn, avroType );
+            }
+          }
         }
+
       }
     } else {
       MessageDialog md =
@@ -1162,7 +1392,7 @@ public class AvroOutputDialog extends BaseStepDialog implements StepDialogInterf
             for ( int aNameColumn : nameColumn ) {
               tableItem.setText( aNameColumn, Const.NVL( v.getName(), "" ) );
             }
-            if( validSchema ) {
+            if( validSchema && !wCreateSchemaFile.getSelection() ) {
               for ( int anAvroNameColumn : avroNameColumn ) {
                 for( int o = 0; o < avroFieldNames.length; o++ ) {
                   String fieldName = avroFieldNames[o];
@@ -1172,6 +1402,10 @@ public class AvroOutputDialog extends BaseStepDialog implements StepDialogInterf
                     matchName = fieldName.substring( 2 );
                   }
                   if ( matchName.equalsIgnoreCase( Const.NVL( v.getName(), "" ) ) ) {
+                    if( fieldName != null && fieldName.length() > 0 )
+                    {
+                      fieldName = "$."+fieldName;
+                    }
                     tableItem.setText( anAvroNameColumn, Const.NVL( fieldName, "" ) );
                     try {
 
@@ -1187,6 +1421,25 @@ public class AvroOutputDialog extends BaseStepDialog implements StepDialogInterf
                     break;
                   }
                 }
+              }
+            } else if ( wCreateSchemaFile.getSelection() )
+            {
+              for( int aNameColumn : nameColumn ) {
+                tableItem.setText( aNameColumn, Const.NVL( v.getName(), "" ) );
+              }
+
+              String avroName = v.getName();
+              if( avroName != null && avroName.length() > 0 ) {
+                avroName = "$." + avroName;
+              }
+              for( int anAvroNameColumn : avroNameColumn ) {
+               tableItem.setText( anAvroNameColumn, Const.NVL( avroName, "" ) );
+              }
+
+              String avroType = AvroOutputField.getAvroTypeDesc( AvroOutputField.getDefaultAvroType( v.getType() ) );
+              for( int anAvroTypeColumn : avroTypeColumn )
+              {
+                tableItem.setText( anAvroTypeColumn, Const.NVL( avroType, "" ) );
               }
             }
 
