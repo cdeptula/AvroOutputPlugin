@@ -1117,7 +1117,7 @@ public class AvroOutputDialog extends BaseStepDialog implements StepDialogInterf
     wCreateParentFolder.setSelection( input.getCreateParentFolder() );
     wCreateSchemaFile.setSelection( input.getCreateSchemaFile() );
     wWriteSchemaFile.setSelection( input.getWriteSchemaFile() );
-    wCompression.setText( input.getCompressionType() );
+    wCompression.setText( Const.NVL( input.getCompressionType(), "" ) );
 
     wAddDate.setSelection( input.getDateInFilename() );
     wAddTime.setSelection( input.getTimeInFilename() );

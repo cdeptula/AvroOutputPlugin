@@ -271,7 +271,7 @@ public class AvroOutput extends BaseStep implements StepInterface {
         }
         data.datumWriter = new GenericDatumWriter<GenericRecord>( data.avroSchema );
         data.dataFileWriter = new DataFileWriter<GenericRecord>( data.datumWriter );
-        if( meta.getCompressionType().equalsIgnoreCase( "none" ) && !Const.isEmpty( meta.getCompressionType() ) )
+        if( !meta.getCompressionType().equalsIgnoreCase( "none" ) && !Const.isEmpty( meta.getCompressionType() ) )
         {
           data.dataFileWriter.setCodec( CodecFactory.fromString( meta.getCompressionType() ) );
         }

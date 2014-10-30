@@ -53,6 +53,36 @@ import java.util.List;
  *
  */
 public class AvroOutputMeta extends BaseStepMeta implements StepMetaInterface {
+  public static final String CREATE_PARENT_FOLDER = "create_parent_folder";
+  public static final String WRITE_SCHEMA_FILE = AvroOutputMeta.WRITE_SCHEMA_FILE;
+  public static final String CREATE_SCHEMA_FILE = "create_schema_file";
+  public static final String NAMESPACE = "namespace";
+  public static final String DOC = "doc";
+  public static final String RECORDNAME = "recordname";
+  public static final String FILENAME = "filename";
+  public static final String SCHEMAFILENAME = "schemafilename";
+  public static final String COMPRESSIONTYPE = "compressiontype";
+  public static final String SPLIT = "split";
+  public static final String HASPARTNO = "haspartno";
+  public static final String ADD_DATE = "add_date";
+  public static final String ADD_TIME = "add_time";
+  public static final String SPECIFY_FORMAT = "SpecifyFormat";
+  public static final String DATE_TIME_FORMAT = "date_time_format";
+  public static final String ADD_TO_RESULT_FILENAMES = "add_to_result_filenames";
+  public static final String FILE = "file";
+  public static final String FIELDS = "fields";
+  public static final String FIELD = "field";
+  public static final String NAME = "name";
+  public static final String AVRONAME = "avroname";
+  public static final String AVROTYPE = "avrotype";
+  public static final String NULLABLE = "nullable";
+  public static final String FILE_NAME = "file_name";
+  public static final String SCHEMA_FILE_NAME = "schemaFileName";
+  public static final String FILE_ADD_STEPNR = "file_add_stepnr";
+  public static final String FILE_ADD_PARTNR = "file_add_partnr";
+  public static final String FILE_ADD_DATE = "file_add_date";
+  public static final String FILE_ADD_TIME = "file_add_time";
+  public static final String FIELD_NAME = "field_name";
   private static Class<?> PKG = AvroOutputMeta.class; // for i18n purposes, needed by Translator2!!
 
   //Avro 1.7.6 supports bzip2 as an additional codec; however, Pentaho is still on Avro 1.6.2.
@@ -384,52 +414,52 @@ public class AvroOutputMeta extends BaseStepMeta implements StepMetaInterface {
   public void readData( Node stepnode ) throws KettleXMLException {
     try {
       // Default createparentfolder to true if the tag is missing
-      String createParentFolderTagValue = XMLHandler.getTagValue( stepnode, "create_parent_folder" );
-      String writeSchemaFileTagValue = XMLHandler.getTagValue( stepnode, "write_schema_file" );
-      String createSchemaFileTagValue = XMLHandler.getTagValue( stepnode, "create_schema_file" );
+      String createParentFolderTagValue = XMLHandler.getTagValue( stepnode, CREATE_PARENT_FOLDER );
+      String writeSchemaFileTagValue = XMLHandler.getTagValue( stepnode, WRITE_SCHEMA_FILE );
+      String createSchemaFileTagValue = XMLHandler.getTagValue( stepnode, CREATE_SCHEMA_FILE );
       writeSchemaFile =
         writeSchemaFileTagValue == null ? false : "Y".equalsIgnoreCase( writeSchemaFileTagValue );
       createSchemaFile =
         ( createSchemaFileTagValue == null ) ? false : "Y".equalsIgnoreCase( createSchemaFileTagValue );
-      namespace = XMLHandler.getTagValue( stepnode, "namespace" );
-      doc = XMLHandler.getTagValue( stepnode, "doc" );
-      recordName = XMLHandler.getTagValue( stepnode, "recordname" );
+      namespace = XMLHandler.getTagValue( stepnode, NAMESPACE );
+      doc = XMLHandler.getTagValue( stepnode, DOC );
+      recordName = XMLHandler.getTagValue( stepnode, RECORDNAME );
 
       createParentFolder =
         ( createParentFolderTagValue == null ) ? true : "Y".equalsIgnoreCase( createParentFolderTagValue );
       
-      fileName = XMLHandler.getTagValue( stepnode, "filename" );
-      schemaFileName = XMLHandler.getTagValue( stepnode, "schemafilename" );
-      compressionType = XMLHandler.getTagValue( stepnode, "compressiontype" );
+      fileName = XMLHandler.getTagValue( stepnode, FILENAME );
+      schemaFileName = XMLHandler.getTagValue( stepnode, SCHEMAFILENAME );
+      compressionType = XMLHandler.getTagValue( stepnode, COMPRESSIONTYPE );
     		  
-      stepNrInFilename = "Y".equalsIgnoreCase( XMLHandler.getTagValue( stepnode, "split" ) );
-      partNrInFilename = "Y".equalsIgnoreCase( XMLHandler.getTagValue( stepnode, "haspartno" ) );
-      dateInFilename = "Y".equalsIgnoreCase( XMLHandler.getTagValue( stepnode, "add_date" ) );
-      timeInFilename = "Y".equalsIgnoreCase( XMLHandler.getTagValue( stepnode, "add_time" ) );
-      specifyingFormat = "Y".equalsIgnoreCase( XMLHandler.getTagValue( stepnode, "SpecifyFormat" ) );
-      dateTimeFormat = XMLHandler.getTagValue( stepnode, "date_time_format" );
+      stepNrInFilename = "Y".equalsIgnoreCase( XMLHandler.getTagValue( stepnode, SPLIT ) );
+      partNrInFilename = "Y".equalsIgnoreCase( XMLHandler.getTagValue( stepnode, HASPARTNO ) );
+      dateInFilename = "Y".equalsIgnoreCase( XMLHandler.getTagValue( stepnode, ADD_DATE ) );
+      timeInFilename = "Y".equalsIgnoreCase( XMLHandler.getTagValue( stepnode, ADD_TIME ) );
+      specifyingFormat = "Y".equalsIgnoreCase( XMLHandler.getTagValue( stepnode, SPECIFY_FORMAT ) );
+      dateTimeFormat = XMLHandler.getTagValue( stepnode, DATE_TIME_FORMAT );
 
-      String AddToResultFiles = XMLHandler.getTagValue( stepnode, "file", "add_to_result_filenames" );
+      String AddToResultFiles = XMLHandler.getTagValue( stepnode, FILE, ADD_TO_RESULT_FILENAMES );
       if ( Const.isEmpty( AddToResultFiles ) ) {
         addToResultFilenames = true;
       } else {
         addToResultFilenames = "Y".equalsIgnoreCase( AddToResultFiles );
       }      
       
-      Node fields = XMLHandler.getSubNode( stepnode, "fields" );
-      int nrfields = XMLHandler.countNodes( fields, "field" );
+      Node fields = XMLHandler.getSubNode( stepnode, FIELDS );
+      int nrfields = XMLHandler.countNodes( fields, FIELD );
 
       allocate( nrfields );
 
       for ( int i = 0; i < nrfields; i++ ) {
-        Node fnode = XMLHandler.getSubNodeByNr( fields, "field", i );
+        Node fnode = XMLHandler.getSubNodeByNr( fields, FIELD, i );
 
         outputFields[i] = new AvroOutputField();
-        outputFields[i].setName( XMLHandler.getTagValue( fnode, "name" ) );
-        outputFields[i].setAvroName( XMLHandler.getTagValue( fnode, "avroname" ) );
-        outputFields[i].setAvroType( Const.toInt( XMLHandler.getTagValue( fnode, "avrotype" ), 0 ) );
-        outputFields[i].setNullable( XMLHandler.getTagValue( fnode, "nullable" ) == null ? true :
-          "Y".equalsIgnoreCase( XMLHandler.getTagValue( fnode, "nullable" ) ) );
+        outputFields[i].setName( XMLHandler.getTagValue( fnode, NAME ) );
+        outputFields[i].setAvroName( XMLHandler.getTagValue( fnode, AVRONAME ) );
+        outputFields[i].setAvroType( Const.toInt( XMLHandler.getTagValue( fnode, AVROTYPE ), 0 ) );
+        outputFields[i].setNullable( XMLHandler.getTagValue( fnode, NULLABLE ) == null ? true :
+          "Y".equalsIgnoreCase( XMLHandler.getTagValue( fnode, NULLABLE ) ) );
       }
     } catch ( Exception e ) {
       throw new KettleXMLException( "Unable to load step info from XML", e );
@@ -440,8 +470,8 @@ public class AvroOutputMeta extends BaseStepMeta implements StepMetaInterface {
     createParentFolder = true; // Default createparentfolder to true
     createSchemaFile = false;
     writeSchemaFile = true;
-    namespace = "namespace";
-    recordName = "recordname";
+    namespace = NAMESPACE;
+    recordName = RECORDNAME;
     specifyingFormat = false;
     dateTimeFormat = null;
     fileName = "file.avro";
@@ -510,23 +540,23 @@ public class AvroOutputMeta extends BaseStepMeta implements StepMetaInterface {
   public String getXML() {
     StringBuffer retval = new StringBuffer( 800 );
 
-    retval.append( "    " + XMLHandler.addTagValue( "create_schema_file", createSchemaFile ) );
-    retval.append( "    " + XMLHandler.addTagValue( "write_schema_file", writeSchemaFile ) );
-    retval.append( "    " + XMLHandler.addTagValue( "namespace", namespace ) );
-    retval.append( "    " + XMLHandler.addTagValue( "doc", doc ) );
-    retval.append( "    " + XMLHandler.addTagValue( "recordname", recordName ) );
-    retval.append( "    " + XMLHandler.addTagValue( "create_parent_folder", createParentFolder ) );
-    retval.append( "      " ).append( XMLHandler.addTagValue( "filename", fileName ) );
-    retval.append( "      " ).append( XMLHandler.addTagValue( "schemafilename", schemaFileName ) );
-    retval.append( "      " ).append( XMLHandler.addTagValue( "compressiontype", compressionType ) );
-    retval.append( "      " ).append( XMLHandler.addTagValue( "split", stepNrInFilename ) );
-    retval.append( "      " ).append( XMLHandler.addTagValue( "haspartno", partNrInFilename ) );
-    retval.append( "      " ).append( XMLHandler.addTagValue( "add_date", dateInFilename ) );
-    retval.append( "      " ).append( XMLHandler.addTagValue( "add_time", timeInFilename ) );
-    retval.append( "      " ).append( XMLHandler.addTagValue( "SpecifyFormat", specifyingFormat ) );
-    retval.append( "      " ).append( XMLHandler.addTagValue( "date_time_format", dateTimeFormat ) );
+    retval.append( "    " + XMLHandler.addTagValue( CREATE_SCHEMA_FILE, createSchemaFile ) );
+    retval.append( "    " + XMLHandler.addTagValue( AvroOutputMeta.WRITE_SCHEMA_FILE, writeSchemaFile ) );
+    retval.append( "    " + XMLHandler.addTagValue( NAMESPACE, namespace ) );
+    retval.append( "    " + XMLHandler.addTagValue( DOC, doc ) );
+    retval.append( "    " + XMLHandler.addTagValue( RECORDNAME, recordName ) );
+    retval.append( "    " + XMLHandler.addTagValue( CREATE_PARENT_FOLDER, createParentFolder ) );
+    retval.append( "      " ).append( XMLHandler.addTagValue( FILENAME, fileName ) );
+    retval.append( "      " ).append( XMLHandler.addTagValue( SCHEMAFILENAME, schemaFileName ) );
+    retval.append( "      " ).append( XMLHandler.addTagValue( COMPRESSIONTYPE, compressionType ) );
+    retval.append( "      " ).append( XMLHandler.addTagValue( SPLIT, stepNrInFilename ) );
+    retval.append( "      " ).append( XMLHandler.addTagValue( HASPARTNO, partNrInFilename ) );
+    retval.append( "      " ).append( XMLHandler.addTagValue( ADD_DATE, dateInFilename ) );
+    retval.append( "      " ).append( XMLHandler.addTagValue( ADD_TIME, timeInFilename ) );
+    retval.append( "      " ).append( XMLHandler.addTagValue( SPECIFY_FORMAT, specifyingFormat ) );
+    retval.append( "      " ).append( XMLHandler.addTagValue( DATE_TIME_FORMAT, dateTimeFormat ) );
 
-    retval.append( "      " ).append( XMLHandler.addTagValue( "add_to_result_filenames", addToResultFilenames ) );
+    retval.append( "      " ).append( XMLHandler.addTagValue( ADD_TO_RESULT_FILENAMES, addToResultFilenames ) );
 
     retval.append( "    <fields>" ).append( Const.CR );
     for ( int i = 0; i < outputFields.length; i++ ) {
@@ -534,10 +564,10 @@ public class AvroOutputMeta extends BaseStepMeta implements StepMetaInterface {
 
       if ( field.getName() != null && field.getName().length() != 0 ) {
         retval.append( "      <field>" ).append( Const.CR );
-        retval.append( "        " ).append( XMLHandler.addTagValue( "name", field.getName() ) );
-        retval.append( "        " ).append( XMLHandler.addTagValue( "avroname", field.getAvroName() ) );
-        retval.append( "        " ).append( XMLHandler.addTagValue( "avrotype", field.getAvroType() ) );
-        retval.append( "        " ).append( XMLHandler.addTagValue( "nullable", field.getNullable() ) );
+        retval.append( "        " ).append( XMLHandler.addTagValue( NAME, field.getName() ) );
+        retval.append( "        " ).append( XMLHandler.addTagValue( AVRONAME, field.getAvroName() ) );
+        retval.append( "        " ).append( XMLHandler.addTagValue( AVROTYPE, field.getAvroType() ) );
+        retval.append( "        " ).append( XMLHandler.addTagValue( NULLABLE, field.getNullable() ) );
         retval.append( "      </field>" ).append( Const.CR );
       }
     }
@@ -549,41 +579,41 @@ public class AvroOutputMeta extends BaseStepMeta implements StepMetaInterface {
   public void readRep( Repository rep, IMetaStore metaStore, ObjectId id_step, List<DatabaseMeta> databases )
     throws KettleException {
     try {
-      createParentFolder = rep.getStepAttributeBoolean( id_step, "create_parent_folder" );
-      namespace = rep.getStepAttributeString( id_step, "namespace" );
-      doc = rep.getStepAttributeString( id_step, "doc" );
-      recordName = rep.getStepAttributeString( id_step, "recordname" );
-      createSchemaFile = rep.getStepAttributeBoolean( id_step, "create_schema_file" );
-      writeSchemaFile = rep.getStepAttributeBoolean( id_step, "write_schema_file" );
-      fileName = rep.getStepAttributeString( id_step, "file_name" );
-      schemaFileName = rep.getStepAttributeString( id_step, "schemaFileName" );
-      compressionType = rep.getStepAttributeString( id_step, "compressiontype" );
-      stepNrInFilename = rep.getStepAttributeBoolean( id_step, "file_add_stepnr" );
-      partNrInFilename = rep.getStepAttributeBoolean( id_step, "file_add_partnr" );
-      dateInFilename = rep.getStepAttributeBoolean( id_step, "file_add_date" );
-      timeInFilename = rep.getStepAttributeBoolean( id_step, "file_add_time" );
-      specifyingFormat = rep.getStepAttributeBoolean( id_step, "SpecifyFormat" );
-      dateTimeFormat = rep.getStepAttributeString( id_step, "date_time_format" );
+      createParentFolder = rep.getStepAttributeBoolean( id_step, CREATE_PARENT_FOLDER );
+      namespace = rep.getStepAttributeString( id_step, NAMESPACE );
+      doc = rep.getStepAttributeString( id_step, DOC );
+      recordName = rep.getStepAttributeString( id_step, RECORDNAME );
+      createSchemaFile = rep.getStepAttributeBoolean( id_step, CREATE_SCHEMA_FILE );
+      writeSchemaFile = rep.getStepAttributeBoolean( id_step, AvroOutputMeta.WRITE_SCHEMA_FILE );
+      fileName = rep.getStepAttributeString( id_step, FILE_NAME );
+      schemaFileName = rep.getStepAttributeString( id_step, SCHEMA_FILE_NAME );
+      compressionType = rep.getStepAttributeString( id_step, COMPRESSIONTYPE );
+      stepNrInFilename = rep.getStepAttributeBoolean( id_step, FILE_ADD_STEPNR );
+      partNrInFilename = rep.getStepAttributeBoolean( id_step, FILE_ADD_PARTNR );
+      dateInFilename = rep.getStepAttributeBoolean( id_step, FILE_ADD_DATE );
+      timeInFilename = rep.getStepAttributeBoolean( id_step, FILE_ADD_TIME );
+      specifyingFormat = rep.getStepAttributeBoolean( id_step, SPECIFY_FORMAT );
+      dateTimeFormat = rep.getStepAttributeString( id_step, DATE_TIME_FORMAT );
 
-      String AddToResultFiles = rep.getStepAttributeString( id_step, "add_to_result_filenames" );
+      String AddToResultFiles = rep.getStepAttributeString( id_step, ADD_TO_RESULT_FILENAMES );
       if ( Const.isEmpty( AddToResultFiles ) ) {
         addToResultFilenames = true;
       } else {
-        addToResultFilenames = rep.getStepAttributeBoolean( id_step, "add_to_result_filenames" );
+        addToResultFilenames = rep.getStepAttributeBoolean( id_step, ADD_TO_RESULT_FILENAMES );
       }
 
-      int nrfields = rep.countNrStepAttributes( id_step, "field_name" );
+      int nrfields = rep.countNrStepAttributes( id_step, FIELD_NAME );
 
       allocate( nrfields );
 
       for ( int i = 0; i < nrfields; i++ ) {
         outputFields[i] = new AvroOutputField();
 
-        outputFields[i].setName( rep.getStepAttributeString( id_step, i, "field_name" ) );
-        outputFields[i].setAvroName( rep.getStepAttributeString( id_step, i, "avroname" ) );
-        Long avroType = rep.getStepAttributeInteger( id_step, i, "avrotype" );
+        outputFields[i].setName( rep.getStepAttributeString( id_step, i, FIELD_NAME ) );
+        outputFields[i].setAvroName( rep.getStepAttributeString( id_step, i, AVRONAME ) );
+        Long avroType = rep.getStepAttributeInteger( id_step, i, AVROTYPE );
         outputFields[i].setAvroType( avroType.intValue() );
-        outputFields[i].setNullable( rep.getStepAttributeBoolean( id_step, i, "nullable" ) );
+        outputFields[i].setNullable( rep.getStepAttributeBoolean( id_step, i, NULLABLE ) );
       }
 
     } catch ( Exception e ) {
@@ -594,31 +624,31 @@ public class AvroOutputMeta extends BaseStepMeta implements StepMetaInterface {
   public void saveRep( Repository rep, IMetaStore metaStore, ObjectId id_transformation, ObjectId id_step )
     throws KettleException {
     try {
-      rep.saveStepAttribute( id_transformation, id_step, "create_schema_file", createSchemaFile );
-      rep.saveStepAttribute( id_transformation, id_step, "write_schema_file", writeSchemaFile );
-      rep.saveStepAttribute( id_transformation, id_step, "namespace", namespace );
-      rep.saveStepAttribute( id_transformation, id_step, "doc", doc );
-      rep.saveStepAttribute( id_transformation, id_step, "recordname", recordName );
-      rep.saveStepAttribute( id_transformation, id_step, "create_parent_folder", createParentFolder );
-      rep.saveStepAttribute( id_transformation, id_step, "file_name", fileName );
-      rep.saveStepAttribute( id_transformation, id_step, "schemaFileName", schemaFileName );
-      rep.saveStepAttribute( id_transformation, id_step, "compressiontype", compressionType );
-      rep.saveStepAttribute( id_transformation, id_step, "file_add_stepnr", stepNrInFilename );
-      rep.saveStepAttribute( id_transformation, id_step, "file_add_partnr", partNrInFilename );
-      rep.saveStepAttribute( id_transformation, id_step, "file_add_date", dateInFilename );
-      rep.saveStepAttribute( id_transformation, id_step, "date_time_format", dateTimeFormat );
-      rep.saveStepAttribute( id_transformation, id_step, "SpecifyFormat", specifyingFormat );
+      rep.saveStepAttribute( id_transformation, id_step, CREATE_SCHEMA_FILE, createSchemaFile );
+      rep.saveStepAttribute( id_transformation, id_step, AvroOutputMeta.WRITE_SCHEMA_FILE, writeSchemaFile );
+      rep.saveStepAttribute( id_transformation, id_step, NAMESPACE, namespace );
+      rep.saveStepAttribute( id_transformation, id_step, DOC, doc );
+      rep.saveStepAttribute( id_transformation, id_step, RECORDNAME, recordName );
+      rep.saveStepAttribute( id_transformation, id_step, CREATE_PARENT_FOLDER, createParentFolder );
+      rep.saveStepAttribute( id_transformation, id_step, FILE_NAME, fileName );
+      rep.saveStepAttribute( id_transformation, id_step, SCHEMA_FILE_NAME, schemaFileName );
+      rep.saveStepAttribute( id_transformation, id_step, COMPRESSIONTYPE, compressionType );
+      rep.saveStepAttribute( id_transformation, id_step, FILE_ADD_STEPNR, stepNrInFilename );
+      rep.saveStepAttribute( id_transformation, id_step, FILE_ADD_PARTNR, partNrInFilename );
+      rep.saveStepAttribute( id_transformation, id_step, FILE_ADD_DATE, dateInFilename );
+      rep.saveStepAttribute( id_transformation, id_step, DATE_TIME_FORMAT, dateTimeFormat );
+      rep.saveStepAttribute( id_transformation, id_step, SPECIFY_FORMAT, specifyingFormat );
 
-      rep.saveStepAttribute( id_transformation, id_step, "add_to_result_filenames", addToResultFilenames );
-      rep.saveStepAttribute( id_transformation, id_step, "file_add_time", timeInFilename );
+      rep.saveStepAttribute( id_transformation, id_step, ADD_TO_RESULT_FILENAMES, addToResultFilenames );
+      rep.saveStepAttribute( id_transformation, id_step, FILE_ADD_TIME, timeInFilename );
 
       for ( int i = 0; i < outputFields.length; i++ ) {
         AvroOutputField field = outputFields[i];
 
-        rep.saveStepAttribute( id_transformation, id_step, i, "field_name", field.getName() );
-        rep.saveStepAttribute( id_transformation, id_step, i, "avroname", field.getAvroName() );
-        rep.saveStepAttribute( id_transformation, id_step, i, "avrotype", field.getAvroType() );
-        rep.saveStepAttribute( id_transformation, id_step, i, "nullable", field.getNullable() );
+        rep.saveStepAttribute( id_transformation, id_step, i, FIELD_NAME, field.getName() );
+        rep.saveStepAttribute( id_transformation, id_step, i, AVRONAME, field.getAvroName() );
+        rep.saveStepAttribute( id_transformation, id_step, i, AVROTYPE, field.getAvroType() );
+        rep.saveStepAttribute( id_transformation, id_step, i, NULLABLE, field.getNullable() );
       }
     } catch ( Exception e ) {
       throw new KettleException( "Unable to save step information to the repository for id_step=" + id_step, e );
