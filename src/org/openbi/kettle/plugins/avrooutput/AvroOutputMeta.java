@@ -556,7 +556,7 @@ public class AvroOutputMeta extends BaseStepMeta implements StepMetaInterface {
       createSchemaFile = rep.getStepAttributeBoolean( id_step, "create_schema_file" );
       writeSchemaFile = rep.getStepAttributeBoolean( id_step, "write_schema_file" );
       fileName = rep.getStepAttributeString( id_step, "file_name" );
-      schemaFileName = rep.getStepAttributeString( id_step, "schemafilename" );
+      schemaFileName = rep.getStepAttributeString( id_step, "schemaFileName" );
       compressionType = rep.getStepAttributeString( id_step, "compressiontype" );
       stepNrInFilename = rep.getStepAttributeBoolean( id_step, "file_add_stepnr" );
       partNrInFilename = rep.getStepAttributeBoolean( id_step, "file_add_partnr" );
