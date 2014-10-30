@@ -125,6 +125,10 @@ public class AvroOutputDialog extends BaseStepDialog implements StepDialogInterf
   private CCombo wDateTimeFormat;
   private FormData fdlDateTimeFormat, fdDateTimeFormat;
 
+  private Label wlCompression;
+  private CCombo wCompression;
+  private FormData fdlCompression, fdCompression;
+
   private Label wlSpecifyFormat;
   private Button wSpecifyFormat;
   private FormData fdlSpecifyFormat, fdSpecifyFormat;
@@ -447,20 +451,45 @@ public class AvroOutputDialog extends BaseStepDialog implements StepDialogInterf
       }
     } );
 
+    // Compression
+    //
+    // DateTimeFormat
+    wlCompression = new Label( wFileComp, SWT.RIGHT );
+    wlCompression.setText( BaseMessages.getString( PKG, "AvroOutputDialog.Compression.Label" ) );
+    props.setLook( wlCompression );
+    fdlCompression = new FormData();
+    fdlCompression.left = new FormAttachment( 0, 0 );
+    fdlCompression.top = new FormAttachment( wCreateParentFolder, margin );
+    fdlCompression.right = new FormAttachment( middle, -margin );
+    wlCompression.setLayoutData( fdlCompression );
+    wCompression = new CCombo( wFileComp, SWT.BORDER | SWT.READ_ONLY );
+    wCompression.setEditable( true );
+    props.setLook( wCompression );
+    wCompression.addModifyListener( lsMod );
+    fdCompression = new FormData();
+    fdCompression.left = new FormAttachment( middle, 0 );
+    fdCompression.top = new FormAttachment( wCreateParentFolder, margin );
+    fdCompression.right = new FormAttachment( 75, 0 );
+    wCompression.setLayoutData( fdCompression );
+    String[] compressions = AvroOutputMeta.compressionTypes;
+    for ( String compression : compressions ) {
+      wCompression.add( compression );
+    }
+
     // Create multi-part file?
     wlAddStepnr = new Label( wFileComp, SWT.RIGHT );
     wlAddStepnr.setText( BaseMessages.getString( PKG, "AvroOutputDialog.AddStepnr.Label" ) );
     props.setLook( wlAddStepnr );
     fdlAddStepnr = new FormData();
     fdlAddStepnr.left = new FormAttachment( 0, 0 );
-    fdlAddStepnr.top = new FormAttachment( wCreateParentFolder, margin );
+    fdlAddStepnr.top = new FormAttachment( wCompression, margin );
     fdlAddStepnr.right = new FormAttachment( middle, -margin );
     wlAddStepnr.setLayoutData( fdlAddStepnr );
     wAddStepnr = new Button( wFileComp, SWT.CHECK );
     props.setLook( wAddStepnr );
     fdAddStepnr = new FormData();
     fdAddStepnr.left = new FormAttachment( middle, 0 );
-    fdAddStepnr.top = new FormAttachment( wCreateParentFolder, margin );
+    fdAddStepnr.top = new FormAttachment( wCompression, margin );
     fdAddStepnr.right = new FormAttachment( 100, 0 );
     wAddStepnr.setLayoutData( fdAddStepnr );
     wAddStepnr.addSelectionListener( new SelectionAdapter() {
@@ -1088,6 +1117,7 @@ public class AvroOutputDialog extends BaseStepDialog implements StepDialogInterf
     wCreateParentFolder.setSelection( input.getCreateParentFolder() );
     wCreateSchemaFile.setSelection( input.getCreateSchemaFile() );
     wWriteSchemaFile.setSelection( input.getWriteSchemaFile() );
+    wCompression.setText( input.getCompressionType() );
 
     wAddDate.setSelection( input.getDateInFilename() );
     wAddTime.setSelection( input.getTimeInFilename() );
@@ -1142,6 +1172,7 @@ public class AvroOutputDialog extends BaseStepDialog implements StepDialogInterf
     tfoi.setNamespace( wNamespace.getText() );
     tfoi.setRecordName( wRecordName.getText() );
     tfoi.setDoc( wDoc.getText() );
+    tfoi.setCompressionType( wCompression.getText() );
     tfoi.setCreateParentFolder( wCreateParentFolder.getSelection() );
     tfoi.setStepNrInFilename( wAddStepnr.getSelection() );
     tfoi.setPartNrInFilename( wAddPartnr.getSelection() );

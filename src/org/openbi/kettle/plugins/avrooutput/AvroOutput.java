@@ -24,11 +24,13 @@ package org.openbi.kettle.plugins.avrooutput;
 
 import org.apache.avro.Schema;
 import org.apache.avro.Schema.Parser;
+import org.apache.avro.file.CodecFactory;
 import org.apache.avro.file.DataFileWriter;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericDatumWriter;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.commons.vfs.FileObject;
+import org.pentaho.di.core.Const;
 import org.pentaho.di.core.ResultFile;
 import org.pentaho.di.core.exception.KettleException;
 import org.pentaho.di.core.exception.KettleFileException;
@@ -269,6 +271,10 @@ public class AvroOutput extends BaseStep implements StepInterface {
         }
         data.datumWriter = new GenericDatumWriter<GenericRecord>( data.avroSchema );
         data.dataFileWriter = new DataFileWriter<GenericRecord>( data.datumWriter );
+        if( meta.getCompressionType().equalsIgnoreCase( "none" ) && !Const.isEmpty( meta.getCompressionType() ) )
+        {
+          data.dataFileWriter.setCodec( CodecFactory.fromString( meta.getCompressionType() ) );
+        }
         data.dataFileWriter.create( data.avroSchema, data.writer );
       } catch ( IOException ex )
       {

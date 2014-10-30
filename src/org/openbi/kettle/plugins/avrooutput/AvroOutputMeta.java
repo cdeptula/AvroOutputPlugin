@@ -55,7 +55,8 @@ import java.util.List;
 public class AvroOutputMeta extends BaseStepMeta implements StepMetaInterface {
   private static Class<?> PKG = AvroOutputMeta.class; // for i18n purposes, needed by Translator2!!
 
-  
+  //Avro 1.7.6 supports bzip2 as an additional codec; however, Pentaho is still on Avro 1.6.2.
+  public static final String[] compressionTypes = {"none","deflate","snappy"};
 
     /** The base name of the output file */
   private String fileName;
@@ -92,6 +93,9 @@ public class AvroOutputMeta extends BaseStepMeta implements StepMetaInterface {
 
   /** Flag: add the time in the filename */
   private boolean timeInFilename;
+
+  /** The compression type */
+  private String compressionType;
 
     /* THE FIELD SPECIFICATIONS ... */
 
@@ -332,6 +336,14 @@ public class AvroOutputMeta extends BaseStepMeta implements StepMetaInterface {
     this.dateTimeFormat = dateTimeFormat;
   }
 
+  public String getCompressionType() {
+    return compressionType;
+  }
+
+  public void setCompressionType( String compressionType ) {
+    this.compressionType = compressionType;
+  }
+
   /**
    * @return Returns the outputFields.
    */
@@ -388,6 +400,7 @@ public class AvroOutputMeta extends BaseStepMeta implements StepMetaInterface {
       
       fileName = XMLHandler.getTagValue( stepnode, "filename" );
       schemaFileName = XMLHandler.getTagValue( stepnode, "schemafilename" );
+      compressionType = XMLHandler.getTagValue( stepnode, "compressiontype" );
     		  
       stepNrInFilename = "Y".equalsIgnoreCase( XMLHandler.getTagValue( stepnode, "split" ) );
       partNrInFilename = "Y".equalsIgnoreCase( XMLHandler.getTagValue( stepnode, "haspartno" ) );
@@ -438,6 +451,7 @@ public class AvroOutputMeta extends BaseStepMeta implements StepMetaInterface {
     dateInFilename = false;
     timeInFilename = false;
     addToResultFilenames = true;
+    compressionType = "none";
 
     }
 
@@ -504,6 +518,7 @@ public class AvroOutputMeta extends BaseStepMeta implements StepMetaInterface {
     retval.append( "    " + XMLHandler.addTagValue( "create_parent_folder", createParentFolder ) );
     retval.append( "      " ).append( XMLHandler.addTagValue( "filename", fileName ) );
     retval.append( "      " ).append( XMLHandler.addTagValue( "schemafilename", schemaFileName ) );
+    retval.append( "      " ).append( XMLHandler.addTagValue( "compressiontype", compressionType ) );
     retval.append( "      " ).append( XMLHandler.addTagValue( "split", stepNrInFilename ) );
     retval.append( "      " ).append( XMLHandler.addTagValue( "haspartno", partNrInFilename ) );
     retval.append( "      " ).append( XMLHandler.addTagValue( "add_date", dateInFilename ) );
@@ -542,6 +557,7 @@ public class AvroOutputMeta extends BaseStepMeta implements StepMetaInterface {
       writeSchemaFile = rep.getStepAttributeBoolean( id_step, "write_schema_file" );
       fileName = rep.getStepAttributeString( id_step, "file_name" );
       schemaFileName = rep.getStepAttributeString( id_step, "schemafilename" );
+      compressionType = rep.getStepAttributeString( id_step, "compressiontype" );
       stepNrInFilename = rep.getStepAttributeBoolean( id_step, "file_add_stepnr" );
       partNrInFilename = rep.getStepAttributeBoolean( id_step, "file_add_partnr" );
       dateInFilename = rep.getStepAttributeBoolean( id_step, "file_add_date" );
@@ -586,6 +602,7 @@ public class AvroOutputMeta extends BaseStepMeta implements StepMetaInterface {
       rep.saveStepAttribute( id_transformation, id_step, "create_parent_folder", createParentFolder );
       rep.saveStepAttribute( id_transformation, id_step, "file_name", fileName );
       rep.saveStepAttribute( id_transformation, id_step, "schemaFileName", schemaFileName );
+      rep.saveStepAttribute( id_transformation, id_step, "compressiontype", compressionType );
       rep.saveStepAttribute( id_transformation, id_step, "file_add_stepnr", stepNrInFilename );
       rep.saveStepAttribute( id_transformation, id_step, "file_add_partnr", partNrInFilename );
       rep.saveStepAttribute( id_transformation, id_step, "file_add_date", dateInFilename );
