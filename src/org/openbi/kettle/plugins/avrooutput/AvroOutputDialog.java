@@ -867,7 +867,7 @@ public class AvroOutputDialog extends BaseStepDialog implements StepDialogInterf
     wbSchema.addSelectionListener( new SelectionAdapter() {
         public void widgetSelected( SelectionEvent e ) {
           FileDialog dialog = new FileDialog( shell, SWT.SAVE );
-          dialog.setFilterExtensions( new String[] { "*.json,*.avsc", "*" } );
+          dialog.setFilterExtensions( new String[] { "*.json;*.avsc", "*" } );
           if ( wSchema.getText() != null ) {
             dialog.setFileName( transMeta.environmentSubstitute( wSchema.getText() ) );
           }
@@ -948,8 +948,10 @@ public class AvroOutputDialog extends BaseStepDialog implements StepDialogInterf
 
   private void updateSchema()
   {
+
     try {
       avroSchema = new Schema.Parser().parse( new File( transMeta.environmentSubstitute( wSchema.getText() ) ) );
+
       validSchema = true;
 
       wFields.setColumnInfo( 1, new ColumnInfo(
@@ -959,6 +961,7 @@ public class AvroOutputDialog extends BaseStepDialog implements StepDialogInterf
       validSchema = false;
       avroSchema = null;
     }
+
   }
 
   private ArrayList<String> getFieldsList( Schema schema, String parent )
@@ -1158,6 +1161,7 @@ public class AvroOutputDialog extends BaseStepDialog implements StepDialogInterf
 
   private void cancel() {
     stepname = null;
+    avroSchema = null;
 
     input.setChanged( backupChanged );
 
@@ -1208,6 +1212,7 @@ public class AvroOutputDialog extends BaseStepDialog implements StepDialogInterf
   }
 
   private void ok() {
+    avroSchema = null;
     if ( Const.isEmpty( wStepname.getText() ) ) {
       return;
     }
@@ -1435,7 +1440,7 @@ public class AvroOutputDialog extends BaseStepDialog implements StepDialogInterf
                   if ( matchName.equalsIgnoreCase( Const.NVL( v.getName(), "" ) ) ) {
                     if( fieldName != null && fieldName.length() > 0 )
                     {
-                      fieldName = "$."+fieldName;
+                      fieldName = "$."+matchName;
                     }
                     tableItem.setText( anAvroNameColumn, Const.NVL( fieldName, "" ) );
                     try {

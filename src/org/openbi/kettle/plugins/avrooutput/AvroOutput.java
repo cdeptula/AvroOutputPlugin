@@ -23,7 +23,6 @@
 package org.openbi.kettle.plugins.avrooutput;
 
 import org.apache.avro.Schema;
-import org.apache.avro.Schema.Parser;
 import org.apache.avro.file.CodecFactory;
 import org.apache.avro.file.DataFileWriter;
 import org.apache.avro.generic.GenericData;
@@ -274,7 +273,7 @@ public class AvroOutput extends BaseStep implements StepInterface {
         {
           writeSchemaFile();
         } else {
-          data.avroSchema = new Parser().parse( new File( meta.getSchemaFileName() ) );
+          data.avroSchema = new Schema.Parser().parse( new File( meta.getSchemaFileName() ) );
         }
         data.datumWriter = new GenericDatumWriter<GenericRecord>( data.avroSchema );
         data.dataFileWriter = new DataFileWriter<GenericRecord>( data.datumWriter );
@@ -309,6 +308,8 @@ public class AvroOutput extends BaseStep implements StepInterface {
       // no more input to be expected...
       closeFile();
       setOutputDone();
+      data.datumWriter = null;
+      data.avroSchema = null;
       return false;
     }
 
@@ -429,6 +430,8 @@ public class AvroOutput extends BaseStep implements StepInterface {
           logDebug( "Closed output stream" );
         }
       }
+      data.datumWriter = null;
+      data.avroSchema = null;
 
       retval = true;
     } catch ( Exception e ) {
@@ -469,6 +472,8 @@ public class AvroOutput extends BaseStep implements StepInterface {
     if ( data.writer != null ) {
 	  closeFile();
     }
+    data.datumWriter = null;
+    data.avroSchema = null;
 	
 	super.dispose( smi, sdi );
   }
