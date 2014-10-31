@@ -54,7 +54,7 @@ import java.util.List;
  */
 public class AvroOutputMeta extends BaseStepMeta implements StepMetaInterface {
   public static final String CREATE_PARENT_FOLDER = "create_parent_folder";
-  public static final String WRITE_SCHEMA_FILE = AvroOutputMeta.WRITE_SCHEMA_FILE;
+  public static final String WRITE_SCHEMA_FILE = "write_schema_file";
   public static final String CREATE_SCHEMA_FILE = "create_schema_file";
   public static final String NAMESPACE = "namespace";
   public static final String DOC = "doc";
@@ -541,7 +541,7 @@ public class AvroOutputMeta extends BaseStepMeta implements StepMetaInterface {
     StringBuffer retval = new StringBuffer( 800 );
 
     retval.append( "    " + XMLHandler.addTagValue( CREATE_SCHEMA_FILE, createSchemaFile ) );
-    retval.append( "    " + XMLHandler.addTagValue( AvroOutputMeta.WRITE_SCHEMA_FILE, writeSchemaFile ) );
+    retval.append( "    " + XMLHandler.addTagValue( WRITE_SCHEMA_FILE, writeSchemaFile ) );
     retval.append( "    " + XMLHandler.addTagValue( NAMESPACE, namespace ) );
     retval.append( "    " + XMLHandler.addTagValue( DOC, doc ) );
     retval.append( "    " + XMLHandler.addTagValue( RECORDNAME, recordName ) );
@@ -584,7 +584,7 @@ public class AvroOutputMeta extends BaseStepMeta implements StepMetaInterface {
       doc = rep.getStepAttributeString( id_step, DOC );
       recordName = rep.getStepAttributeString( id_step, RECORDNAME );
       createSchemaFile = rep.getStepAttributeBoolean( id_step, CREATE_SCHEMA_FILE );
-      writeSchemaFile = rep.getStepAttributeBoolean( id_step, AvroOutputMeta.WRITE_SCHEMA_FILE );
+      writeSchemaFile = rep.getStepAttributeBoolean( id_step, WRITE_SCHEMA_FILE );
       fileName = rep.getStepAttributeString( id_step, FILE_NAME );
       schemaFileName = rep.getStepAttributeString( id_step, SCHEMA_FILE_NAME );
       compressionType = rep.getStepAttributeString( id_step, COMPRESSIONTYPE );
@@ -625,7 +625,7 @@ public class AvroOutputMeta extends BaseStepMeta implements StepMetaInterface {
     throws KettleException {
     try {
       rep.saveStepAttribute( id_transformation, id_step, CREATE_SCHEMA_FILE, createSchemaFile );
-      rep.saveStepAttribute( id_transformation, id_step, AvroOutputMeta.WRITE_SCHEMA_FILE, writeSchemaFile );
+      rep.saveStepAttribute( id_transformation, id_step, WRITE_SCHEMA_FILE, writeSchemaFile );
       rep.saveStepAttribute( id_transformation, id_step, NAMESPACE, namespace );
       rep.saveStepAttribute( id_transformation, id_step, DOC, doc );
       rep.saveStepAttribute( id_transformation, id_step, RECORDNAME, recordName );

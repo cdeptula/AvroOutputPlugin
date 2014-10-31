@@ -221,9 +221,16 @@ public class AvroOutput extends BaseStep implements StepInterface {
       fields.add( avroField );
     }
     data.avroSchema = createAvroSchema( fields, "" );
+    if( log.isDetailed() )
+    {
+      logDetailed( "Automatically generated Avro schema." );
+    }
 
     if( meta.getWriteSchemaFile() ) {
-
+      if( log.isDetailed() )
+      {
+        logDetailed( "Writing schema file." );
+      }
       try {
         String schemaFileName = buildFilename( environmentSubstitute( meta.getSchemaFileName() ), true );
         OutputStream outputStream = getOutputStream( schemaFileName, getTransMeta(), false );
