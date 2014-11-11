@@ -1,11 +1,5 @@
 /*! ******************************************************************************
  *
- * Pentaho Data Integration
- *
- * Copyright (C) 2002-2013 by Pentaho : http://www.pentaho.com
- *
- *******************************************************************************
- *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -35,8 +29,7 @@ import java.util.List;
 /**
  * Describes a single field in a text file
  *
- * @author Chris
- * @since 06-10-2014
+ * @author Inquidia Consulting
  *
  */
 public class AvroOutputField implements Cloneable, Comparable<AvroOutputField> {

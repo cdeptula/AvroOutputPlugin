@@ -1,11 +1,5 @@
 /*! ******************************************************************************
  *
- * Pentaho Data Integration
- *
- * Copyright (C) 2002-2013 by Pentaho : http://www.pentaho.com
- *
- *******************************************************************************
- *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -40,6 +34,7 @@ import org.pentaho.di.trans.step.BaseStepMeta;
 import org.pentaho.di.trans.step.StepDataInterface;
 import org.pentaho.di.trans.step.StepInterface;
 import org.pentaho.di.trans.step.StepMeta;
+import org.pentaho.di.trans.step.StepMetaInjectionInterface;
 import org.pentaho.di.trans.step.StepMetaInterface;
 import org.pentaho.metastore.api.IMetaStore;
 import org.w3c.dom.Node;
@@ -50,7 +45,7 @@ import java.util.List;
 
 /*
  * Created on 4-apr-2003
- *
+ * @author Inquidia Consulting
  */
 public class AvroOutputMeta extends BaseStepMeta implements StepMetaInterface {
   public static final String CREATE_PARENT_FOLDER = "create_parent_folder";
@@ -722,5 +717,11 @@ public class AvroOutputMeta extends BaseStepMeta implements StepMetaInterface {
   public void setFilename( String fileName ) {
     this.fileName = fileName;
   }
+
+  @Override
+  public StepMetaInjectionInterface getStepMetaInjectionInterface() {
+    return new AvroOutputMetaInjection( this );
+  }
+
 
 }

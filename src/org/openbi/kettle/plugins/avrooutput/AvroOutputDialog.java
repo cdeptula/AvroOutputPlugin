@@ -1,11 +1,5 @@
 /*! ******************************************************************************
  *
- * Pentaho Data Integration
- *
- * Copyright (C) 2002-2013 by Pentaho : http://www.pentaho.com
- *
- *******************************************************************************
- *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -78,6 +72,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * @author Inquidia Consulting
+ */
 public class AvroOutputDialog extends BaseStepDialog implements StepDialogInterface {
   private static Class<?> PKG = AvroOutputMeta.class; // for i18n purposes, needed by Translator2!!
 
@@ -1336,7 +1333,7 @@ public class AvroOutputDialog extends BaseStepDialog implements StepDialogInterf
           }
         } else if( createSchemaFile && !( streamName.isEmpty() ) ) { //create schema file
           logBasic("Create File");
-          ValueMetaInterface v = row.searchValueMeta( streamName ); //TODO: This is returning null, need to figure out why
+          ValueMetaInterface v = row.searchValueMeta( streamName );
           logBasic( v != null ? v.getName() : "Value Meta is null" );
           String avroType = "";
           if( v != null ) {

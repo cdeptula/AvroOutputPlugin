@@ -1,11 +1,5 @@
 /*! ******************************************************************************
  *
- * Pentaho Data Integration
- *
- * Copyright (C) 2002-2013 by Pentaho : http://www.pentaho.com
- *
- *******************************************************************************
- *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -51,14 +45,12 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 
 /**
- * Converts input rows to text and then writes this text to one or more files.
+ * Converts input rows to avro and then writes this avro to one or more files.
  *
- * @author Matt
- * @since 4-apr-2003
+ * @author Inquidia Consulting
  */
 public class AvroOutput extends BaseStep implements StepInterface {
   private static Class<?> PKG = AvroOutputMeta.class; // for i18n purposes, needed by Translator2!!
@@ -75,12 +67,29 @@ public class AvroOutput extends BaseStep implements StepInterface {
     super( stepMeta, stepDataInterface, copyNr, transMeta, trans );
   }
 
-  private GenericRecord getRecord( Object[] r, String parentPath, Schema recordSchema ) throws KettleException
+  private GenericRecord getRecord( Object[] r, String parentPath, Schema inputSchema ) throws KettleException
   {
     String parentName ="";
     if(parentPath != null) {
       parentName = new String( parentPath );
     }
+
+    Schema recordSchema = inputSchema;
+
+    List<Schema> unionSchemas = null;
+    if( inputSchema.getType() == Schema.Type.UNION )
+    {
+      unionSchemas = inputSchema.getTypes();
+      if( unionSchemas != null ) {
+        for ( int i = 0; i < unionSchemas.size(); i++ ) {
+          if ( unionSchemas.get( i ).getType() == Schema.Type.RECORD ) {
+            recordSchema = unionSchemas.get( i );
+            break;
+          }
+        }
+      }
+    }
+
     GenericRecord result = new GenericData.Record( recordSchema );
     while( outputFieldIndex < avroOutputFields.length )
     {
@@ -106,6 +115,7 @@ public class AvroOutput extends BaseStep implements StepInterface {
           {
             childPath = currentAvroPath;
           }
+
           GenericRecord fieldRecord = getRecord( r, childPath, childSchema );
           result.put( currentAvroPath, fieldRecord );
         } else {
@@ -123,101 +133,139 @@ public class AvroOutput extends BaseStep implements StepInterface {
     return result;
   }
 
+
   public Schema createAvroSchema( List<AvroOutputField> avroFields, String parentPath ) throws KettleException
   {
+    //Get standard schema stuff
     String doc = meta.getDoc();
     String recordName = meta.getRecordName();
     String namespace = meta.getNamespace();
 
+    //do not want to have to deal with $. paths.
     if( parentPath.startsWith( "$." ) )
     {
       parentPath = parentPath.substring( 2 );
     }
-    List<Schema.Field> fields = new ArrayList<Schema.Field>();
+
+    if( parentPath.endsWith( "." ) )
+    {
+      parentPath = parentPath.substring( 0, parentPath.length() - 1 );
+    }
+
+    // If the parent path is not empty the doc and recordname should not be the default
     if( ! parentPath.isEmpty() )
     {
       doc = "Auto generated for path "+parentPath;
       recordName=parentPath.replaceAll( "[^A-Za-z0-9\\_]", "_" );
     }
+
+    //Create the result schema
     Schema result = Schema.createRecord( recordName, doc, namespace, false );
 
-    Iterator<AvroOutputField> it = avroFields.iterator();
-    String currentPath = parentPath;
-    boolean iterate = false;
-    List<AvroOutputField> subFields = new ArrayList<AvroOutputField>();
-    while( it.hasNext() )
+    List<Schema.Field> resultFields = new ArrayList<Schema.Field>();
+
+    //Can not use an iterator because we will change the list in the middle of this loop
+    for( int i = 0; i < avroFields.size(); i++ )
     {
-      AvroOutputField avroField = it.next();
-      String avroName = avroField.getAvroName();
-      if( avroName.startsWith( "$." ) )
-      {
-        avroName = avroName.substring( 2 );
-      }
+      if( avroFields.get( i ) != null ) {
+        AvroOutputField field = avroFields.get( i );
 
-      String finalName = avroName;
-      if( ! parentPath.isEmpty() )
-      {
-        finalName = avroName.substring( parentPath.length() + 1 );
-      }
+        String avroName = field.getAvroName();
 
-      if( ( ! currentPath.isEmpty() ) && ( ! avroName.startsWith( currentPath ) ) )
-      {
-        Schema fieldSchema = createAvroSchema( subFields, currentPath );
-        String fieldName = currentPath;
-        if( currentPath.contains( "." ) )
-        {
-          fieldName = currentPath.substring( currentPath.lastIndexOf( "." ) + 1 );
+        //Get rid of the $. stuff
+        if ( avroName.startsWith( "$." ) ) {
+          avroName = avroName.substring( 2 );
         }
-        Schema.Field outField = new Schema.Field( fieldName, fieldSchema, null, null );
-        fields.add( outField );
-        currentPath = parentPath;
-        subFields.clear();
-      }
 
-      //We are at the lowest level, no need to iterate.
-      if( ! finalName.contains( "." ) )
-      {
-        Schema fieldSchema = Schema.create( avroField.getAvroSchemaType() );
-        Schema outSchema;
-        if( avroField.getNullable() )
-        {
-          Schema nullSchema = Schema.create( Schema.Type.NULL );
-
-          List< Schema > unionSchema = new ArrayList<Schema>();
-          unionSchema.add( nullSchema );
-          unionSchema.add( fieldSchema );
-          outSchema = Schema.createUnion( unionSchema );
-        } else {
-          outSchema = fieldSchema;
+        //The avroName includes the parent path.  We do not want the parent path for our evaluation.
+        String finalName = avroName;
+        if ( !parentPath.isEmpty() ) {
+          finalName = avroName.substring( parentPath.length() + 1 );
         }
-        Schema.Field outField = new Schema.Field( finalName, outSchema, null, null );
-        fields.add( outField );
-      } else {
-        String nextPath = finalName.substring( 0, finalName.indexOf( "." ) );
-        if( currentPath.equals( nextPath ) )
-        {
-          //do nothing
-        } else if( currentPath.isEmpty() )
-        {
-          currentPath = nextPath;
-        } else {
-          currentPath += "." + nextPath;
-        }
-        subFields.add( avroField );
-      }
 
+        if ( finalName.contains( "." ) ) //It has children, perform children processing.
+        {
+          StringBuilder builder = new StringBuilder();
+          if( ! parentPath.isEmpty() ) {
+            builder.append( parentPath ).append( "." );
+          }
+          builder.append( finalName.substring( 0, finalName.indexOf( "." ) ) )
+            .append( "." );
+          String subPath = builder.toString();
+          List<AvroOutputField> subFields = new ArrayList<AvroOutputField>();
+          subFields.add( field );
+          boolean nullable = field.getNullable();
+          for ( int e = i + 1; e < avroFields.size(); e++ ) {
+            if( avroFields.get( e ) != null )
+            {
+              AvroOutputField subFieldCandidate = avroFields.get( e );
+
+              String candidateName = subFieldCandidate.getAvroName();
+              if( candidateName.startsWith( "$." ) )
+              {
+                candidateName = candidateName.substring( 2 );
+              }
+
+              if( candidateName.startsWith( subPath ) )
+              {
+                if( nullable )
+                {
+                  nullable = subFieldCandidate.getNullable();
+                }
+
+                subFields.add( subFieldCandidate );
+                avroFields.remove( e );
+                e--;
+              }
+            }
+          }
+          subPath = subPath.substring( 0, subPath.length() - 1 );
+
+          Schema subSchema = createAvroSchema( subFields, subPath );
+          Schema outSchema = subSchema;
+          if( nullable ) {
+            Schema nullSchema = Schema.create( Schema.Type.NULL );
+            List<Schema> unionList = new ArrayList<Schema>();
+            unionList.add( nullSchema );
+            unionList.add( subSchema );
+            Schema unionSchema = Schema.createUnion( unionList );
+            outSchema = unionSchema;
+          }
+          Schema.Field schemaField = new Schema.Field( finalName.substring( 0, finalName.indexOf( "." ) )
+            , outSchema, null, null );
+          resultFields.add( schemaField );
+        } else { //Is not a sub field create the field.
+          Schema fieldSchema = Schema.create( field.getAvroSchemaType() );
+          Schema outSchema;
+          if( field.getNullable() )
+          {
+            Schema nullSchema = Schema.create( Schema.Type.NULL );
+
+            List< Schema > unionSchema = new ArrayList<Schema>();
+            unionSchema.add( nullSchema );
+            unionSchema.add( fieldSchema );
+            outSchema = Schema.createUnion( unionSchema );
+          } else {
+            outSchema = fieldSchema;
+          }
+          Schema.Field outField = new Schema.Field( finalName, outSchema, null, null );
+          resultFields.add( outField );
+        }
+      }
     }
 
-    result.setFields( fields );
+    result.setFields( resultFields );
     return result;
   }
+
 
   public void writeSchemaFile() throws KettleException
   {
     List<AvroOutputField> fields = new ArrayList<AvroOutputField>();
-    for( AvroOutputField avroField : avroOutputFields )
+    for( AvroOutputField avroField : meta.getOutputFields() )
     {
       fields.add( avroField );
+
     }
     data.avroSchema = createAvroSchema( fields, "" );
     if( log.isDetailed() )
@@ -245,6 +293,7 @@ public class AvroOutput extends BaseStep implements StepInterface {
 
         schemaWriter.write( data.avroSchema.toString( true ).getBytes() );
         schemaWriter.close();
+        schemaWriter = null;
         if ( log.isDetailed() ) {
           logDetailed( "Closed schema file with name [" + schemaFileName + "]" );
         }
@@ -266,7 +315,7 @@ public class AvroOutput extends BaseStep implements StepInterface {
       first = false;
 
       avroOutputFields = meta.getOutputFields();
-      Arrays.sort( avroOutputFields );
+
       try
       {
         if( meta.getCreateSchemaFile() )
@@ -289,6 +338,8 @@ public class AvroOutput extends BaseStep implements StepInterface {
         stopAll();
       }
 
+      Arrays.sort( avroOutputFields );
+
       data.outputRowMeta = getInputRowMeta().clone();
       meta.getFields( data.outputRowMeta, getStepname(), null, null, this, repository, metaStore );
 
@@ -302,6 +353,8 @@ public class AvroOutput extends BaseStep implements StepInterface {
           }
         }
       }
+
+
     }
 
     if ( r == null ) {
