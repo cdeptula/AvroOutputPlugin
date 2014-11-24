@@ -280,6 +280,11 @@ public class AvroOutput extends BaseStep implements StepInterface {
       }
       try {
         String schemaFileName = buildFilename( environmentSubstitute( meta.getSchemaFileName() ), true );
+        if( meta.getCreateParentFolder() )
+        {
+          logDetailed( "Creating parent folder for schema file" );
+          createParentFolder( schemaFileName );
+        }
         OutputStream outputStream = getOutputStream( schemaFileName, getTransMeta(), false );
 
         if ( log.isDetailed() ) {
@@ -320,13 +325,15 @@ public class AvroOutput extends BaseStep implements StepInterface {
       {
         if( meta.getCreateSchemaFile() )
         {
+          logDetailed( "Generating Avro schema." );
           writeSchemaFile();
         } else {
+          logDetailed( "Reading Avro schema from file." );
           data.avroSchema = new Schema.Parser().parse( new File( meta.getSchemaFileName() ) );
         }
         data.datumWriter = new GenericDatumWriter<GenericRecord>( data.avroSchema );
         data.dataFileWriter = new DataFileWriter<GenericRecord>( data.datumWriter );
-        if( !meta.getCompressionType().equalsIgnoreCase( "none" ) && !Const.isEmpty( meta.getCompressionType() ) )
+        if( !Const.isEmpty( meta.getCompressionType() ) && !meta.getCompressionType().equalsIgnoreCase( "none" ) )
         {
           data.dataFileWriter.setCodec( CodecFactory.fromString( meta.getCompressionType() ) );
         }
@@ -336,6 +343,7 @@ public class AvroOutput extends BaseStep implements StepInterface {
         logError( "Could not open or create file " + meta.getSchemaFileName(), ex );
         setErrors( 1L );
         stopAll();
+        return false;
       }
 
       Arrays.sort( avroOutputFields );
@@ -437,7 +445,7 @@ public class AvroOutput extends BaseStep implements StepInterface {
      // Check for parent folder creation only if the user asks for it
      //
      if ( meta.getCreateParentFolder() ) {
-       createParentFolder( filename, meta.getSchemaFileName() );
+       createParentFolder( filename );
      }
 
      OutputStream outputStream = getOutputStream( filename, getTransMeta(), false );
@@ -476,9 +484,12 @@ public class AvroOutput extends BaseStep implements StepInterface {
         if ( log.isDebug() ) {
           logDebug( "Closing output stream" );
         }
-        data.dataFileWriter.close();
+        if( data.dataFileWriter != null ) {
+          data.dataFileWriter.close();
+        }
         data.writer.close();
         data.writer = null;
+        data.dataFileWriter = null;
         if ( log.isDebug() ) {
           logDebug( "Closed output stream" );
         }
@@ -532,14 +543,12 @@ public class AvroOutput extends BaseStep implements StepInterface {
   }
 
 
-  private void createParentFolder( String filename, String schemaFilename ) throws Exception {
+  private void createParentFolder( String filename ) throws Exception {
     // Check for parent folder
     FileObject parentfolder = null;
-    FileObject schemaParentFolder = null;
     try {
       // Get parent folder
       parentfolder = getFileObject( filename ).getParent();
-      schemaParentFolder = getFileObject( schemaFilename ).getParent();
       if ( parentfolder.exists() ) {
         if ( isDetailed() ) {
           logDetailed( BaseMessages
@@ -562,30 +571,6 @@ public class AvroOutput extends BaseStep implements StepInterface {
         }
       }
       
-      if( ! schemaParentFolder.equals(parentfolder) )
-      {
-    	  if ( schemaParentFolder.exists() ) {
-	        if ( isDetailed() ) {
-	          logDetailed( BaseMessages
-	            .getString( PKG, "AvroOutput.Log.SchemaParentFolderExist", schemaParentFolder.getName() ) );
-	        }
-	      } else {
-	        if ( isDetailed() ) {
-	          logDetailed( BaseMessages.getString( PKG, "AvroOutput.Log.SchemaParentFolderNotExist", schemaParentFolder
-	            .getName() ) );
-	        }
-	        if ( meta.getCreateParentFolder() ) {
-	        	schemaParentFolder.createFolder();
-	          if ( isDetailed() ) {
-	            logDetailed( BaseMessages.getString( PKG, "AvroOutput.Log.SchemaParentFolderCreated", schemaParentFolder
-	              .getName() ) );
-	          }
-	        } else {
-	          throw new KettleException( BaseMessages.getString(
-	            PKG, "AvroOutput.Log.SchemaParentFolderNotExistCreateIt", schemaParentFolder.getName(), schemaFilename ) );
-	        }
-	      }
-      }
     } finally {
       if ( parentfolder != null ) {
         try {
@@ -593,13 +578,6 @@ public class AvroOutput extends BaseStep implements StepInterface {
         } catch ( Exception ex ) {
           // Ignore
         }
-      }
-      if( schemaParentFolder != null ) {
-    	try {
-    		schemaParentFolder.close();
-    	} catch ( Exception ex ) {
-    		//Ignore
-    	}
       }
     }
   }
