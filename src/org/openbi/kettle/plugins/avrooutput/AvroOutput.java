@@ -316,53 +316,49 @@ public class AvroOutput extends BaseStep implements StepInterface {
     boolean result = true;
     Object[] r = getRow(); // This also waits for a row to be finished.
 
-    if ( r != null && first ) {
-      first = false;
+    if (first ) {
+        first = false;
 
-      avroOutputFields = meta.getOutputFields();
+        avroOutputFields = meta.getOutputFields();
 
-      try
-      {
-        if( meta.getCreateSchemaFile() )
-        {
-          logDetailed( "Generating Avro schema." );
-          writeSchemaFile();
-        } else {
-          logDetailed( "Reading Avro schema from file." );
-          data.avroSchema = new Schema.Parser().parse( new File( meta.getSchemaFileName() ) );
+        try {
+            if (meta.getCreateSchemaFile()) {
+                logDetailed("Generating Avro schema.");
+                writeSchemaFile();
+            } else {
+                logDetailed("Reading Avro schema from file.");
+                data.avroSchema = new Schema.Parser().parse(new File(meta.getSchemaFileName()));
+            }
+            data.datumWriter = new GenericDatumWriter<GenericRecord>(data.avroSchema);
+            data.dataFileWriter = new DataFileWriter<GenericRecord>(data.datumWriter);
+            if (!Const.isEmpty(meta.getCompressionType()) && !meta.getCompressionType().equalsIgnoreCase("none")) {
+                data.dataFileWriter.setCodec(CodecFactory.fromString(meta.getCompressionType()));
+            }
+            data.dataFileWriter.create(data.avroSchema, data.writer);
+        } catch (IOException ex) {
+            logError("Could not open or create file " + meta.getSchemaFileName(), ex);
+            setErrors(1L);
+            stopAll();
+            return false;
         }
-        data.datumWriter = new GenericDatumWriter<GenericRecord>( data.avroSchema );
-        data.dataFileWriter = new DataFileWriter<GenericRecord>( data.datumWriter );
-        if( !Const.isEmpty( meta.getCompressionType() ) && !meta.getCompressionType().equalsIgnoreCase( "none" ) )
-        {
-          data.dataFileWriter.setCodec( CodecFactory.fromString( meta.getCompressionType() ) );
+        if (r != null) {
+            Arrays.sort(avroOutputFields);
+
+            data.outputRowMeta = getInputRowMeta().clone();
+            meta.getFields(data.outputRowMeta, getStepname(), null, null, this, repository, metaStore);
+
+            data.fieldnrs = new int[avroOutputFields.length];
+            for (int i = 0; i < avroOutputFields.length; i++) {
+                if (avroOutputFields[i].validate()) {
+                    data.fieldnrs[i] = data.outputRowMeta.indexOfValue(avroOutputFields[i].getName());
+                    if (data.fieldnrs[i] < 0) {
+                        throw new KettleStepException("Field ["
+                                + avroOutputFields[i].getName() + "] couldn't be found in the input stream!");
+                    }
+                }
+            }
+
         }
-        data.dataFileWriter.create( data.avroSchema, data.writer );
-      } catch ( IOException ex )
-      {
-        logError( "Could not open or create file " + meta.getSchemaFileName(), ex );
-        setErrors( 1L );
-        stopAll();
-        return false;
-      }
-
-      Arrays.sort( avroOutputFields );
-
-      data.outputRowMeta = getInputRowMeta().clone();
-      meta.getFields( data.outputRowMeta, getStepname(), null, null, this, repository, metaStore );
-
-      data.fieldnrs = new int[avroOutputFields.length];
-      for ( int i = 0; i < avroOutputFields.length; i++ ) {
-        if( avroOutputFields[i].validate() ) {
-          data.fieldnrs[ i ] = data.outputRowMeta.indexOfValue( avroOutputFields[ i ].getName() );
-          if ( data.fieldnrs[ i ] < 0 ) {
-            throw new KettleStepException( "Field ["
-              + avroOutputFields[ i ].getName() + "] couldn't be found in the input stream!" );
-          }
-        }
-      }
-
-
     }
 
     if ( r == null ) {
