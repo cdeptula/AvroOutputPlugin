@@ -5,7 +5,7 @@
   <!-- set global properties for this build -->
   <property file="build.properties" />
   <property file="build.number" />
-  <property name="version" value="2.1.1"/>
+  <property name="version" value="TRUNK_SNAPSHOT"/>
 
   <target name="init">
     <!-- Create the time stamp -->

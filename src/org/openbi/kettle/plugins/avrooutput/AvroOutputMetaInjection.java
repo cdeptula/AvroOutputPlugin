@@ -19,6 +19,8 @@ package org.openbi.kettle.plugins.avrooutput;
 import org.pentaho.di.core.exception.KettleException;
 import org.pentaho.di.core.row.ValueMetaInterface;
 import org.pentaho.di.trans.step.StepInjectionMetaEntry;
+import org.pentaho.di.trans.step.StepInjectionUtil;
+import org.pentaho.di.trans.step.StepMetaInjectionEntryInterface;
 import org.pentaho.di.trans.step.StepMetaInjectionInterface;
 
 import java.util.ArrayList;
@@ -32,7 +34,7 @@ import java.util.List;
  */
 public class AvroOutputMetaInjection implements StepMetaInjectionInterface {
 
-  public enum Entry {
+  public enum Entry implements StepMetaInjectionEntryInterface {
 
     FILENAME( ValueMetaInterface.TYPE_STRING, "The output filename." ),
     AUTO_CREATE_SCHEMA( ValueMetaInterface.TYPE_STRING, "Automatically generate the Avro schema? (Y/N)" ),
@@ -260,6 +262,42 @@ public class AvroOutputMetaInjection implements StepMetaInjectionInterface {
       }
       meta.setOutputFields( aof );
     }
+  }
+
+  public List<StepInjectionMetaEntry> extractStepMetadataEntries() {
+    List<StepInjectionMetaEntry> list = new ArrayList<StepInjectionMetaEntry>();
+
+    list.add( StepInjectionUtil.getEntry( Entry.FILENAME, meta.getFileName() ) );
+    list.add( StepInjectionUtil.getEntry( Entry.AUTO_CREATE_SCHEMA, meta.getCreateSchemaFile() ) );
+    list.add( StepInjectionUtil.getEntry( Entry.WRITE_SCHEMA_TO_FILE, meta.getWriteSchemaFile() ) );
+    list.add( StepInjectionUtil.getEntry( Entry.AVRO_NAMESPACE, meta.getNamespace() ) );
+    list.add( StepInjectionUtil.getEntry( Entry.AVRO_RECORD_NAME, meta.getRecordName() ) );
+    list.add( StepInjectionUtil.getEntry( Entry.AVRO_DOC, meta.getDoc() ) );
+    list.add( StepInjectionUtil.getEntry( Entry.SCHEMA_FILENAME, meta.getSchemaFileName() ) );
+    list.add( StepInjectionUtil.getEntry( Entry.CREATE_PARENT_FOLDER, meta.getCreateParentFolder() ) );
+    list.add( StepInjectionUtil.getEntry( Entry.COMPRESSION_CODEC, meta.getCompressionType() ) );
+    list.add( StepInjectionUtil.getEntry( Entry.INCLUDE_STEPNR, meta.getStepNrInFilename() ) );
+    list.add( StepInjectionUtil.getEntry( Entry.INCLUDE_PARTNR, meta.getPartNrInFilename() ) );
+    list.add( StepInjectionUtil.getEntry( Entry.INCLUDE_DATE, meta.getDateInFilename() ) );
+    list.add( StepInjectionUtil.getEntry( Entry.INCLUDE_TIME, meta.getTimeInFilename() ) );
+    list.add( StepInjectionUtil.getEntry( Entry.SPECIFY_FORMAT, meta.getSpecifyingFormat() ) );
+    list.add( StepInjectionUtil.getEntry( Entry.DATE_FORMAT, meta.getDateTimeFormat() ) );
+    list.add( StepInjectionUtil.getEntry( Entry.ADD_TO_RESULT, meta.getAddToResultFiles() ) );
+
+    StepInjectionMetaEntry fieldsEntry = StepInjectionUtil.getEntry( Entry.OUTPUT_FIELDS );
+    list.add( fieldsEntry );
+    for( int i = 0; i < meta.getOutputFields().length; i++ )
+    {
+      StepInjectionMetaEntry fieldEntry = StepInjectionUtil.getEntry( Entry.OUTPUT_FIELD );
+      List<StepInjectionMetaEntry> details = fieldEntry.getDetails();
+      details.add( StepInjectionUtil.getEntry( Entry.STREAM_NAME, meta.getOutputFields()[i].getName() ) );
+      details.add( StepInjectionUtil.getEntry( Entry.AVRO_PATH, meta.getOutputFields()[i].getAvroName() ) );
+      details.add( StepInjectionUtil.getEntry( Entry.AVRO_TYPE, meta.getOutputFields()[i].getAvroType() ) );
+      details.add( StepInjectionUtil.getEntry( Entry.NULLABLE, meta.getOutputFields()[i].getNullable() ) );
+      fieldEntry.getDetails().add( fieldEntry );
+    }
+
+    return list;
   }
 
 

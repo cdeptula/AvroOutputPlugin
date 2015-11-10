@@ -22,7 +22,7 @@ import org.apache.avro.file.DataFileWriter;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericDatumWriter;
 import org.apache.avro.generic.GenericRecord;
-import org.apache.commons.vfs.FileObject;
+import org.apache.commons.vfs2.FileObject;
 import org.pentaho.di.core.Const;
 import org.pentaho.di.core.ResultFile;
 import org.pentaho.di.core.exception.KettleException;
@@ -541,6 +541,7 @@ public class AvroOutput extends BaseStep implements StepInterface {
 
   private void createParentFolder( String filename ) throws Exception {
     // Check for parent folder
+
     FileObject parentfolder = null;
     try {
       // Get parent folder
