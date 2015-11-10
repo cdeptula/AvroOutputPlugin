@@ -7,7 +7,8 @@ A big thank you to my employer [Inquidia Consulting](www.inquidia.com) for allow
 
 System Requirements
 ---
--Pentaho Data Integration 5.0 or above
+-Pentaho Data Integration 6.0 or above (Plugin Version 2.2.0 and above)
+-Pentaho Data Integration 5.x or above (Plugin Version 2.1.x and below)
 
 Installation
 ---
