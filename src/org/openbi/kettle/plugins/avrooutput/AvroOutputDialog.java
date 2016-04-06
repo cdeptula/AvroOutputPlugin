@@ -709,6 +709,7 @@ public class AvroOutputDialog extends BaseStepDialog implements StepDialogInterf
           String[] combo = AvroOutputField.mapAvroType( fieldSchema,
             fieldSchema.getType() );
           comboValues = combo;
+            fieldSchema = null;
           } else {
             comboValues = AvroOutputField.getAvroTypeArraySorted();
           }
@@ -935,6 +936,7 @@ public class AvroOutputDialog extends BaseStepDialog implements StepDialogInterf
       }
     }
     Schema.Field f = recordSchema.getField( avroName );
+    recordSchema = null;
     if( f == null )
     {
       return null;
@@ -947,6 +949,7 @@ public class AvroOutputDialog extends BaseStepDialog implements StepDialogInterf
   {
 
     try {
+      avroSchema = null;
       avroSchema = new Schema.Parser().parse( new File( transMeta.environmentSubstitute( wSchema.getText() ) ) );
 
       validSchema = true;
@@ -954,6 +957,7 @@ public class AvroOutputDialog extends BaseStepDialog implements StepDialogInterf
       wFields.setColumnInfo( 1, new ColumnInfo(
         BaseMessages.getString( PKG, "AvroOutputDialog.AvroColumn.Column" ),
         ColumnInfo.COLUMN_TYPE_CCOMBO, getSchemaFields(), false ) );
+      avroSchema = null;
     } catch (Exception ex) {
       validSchema = false;
       avroSchema = null;
@@ -1011,6 +1015,7 @@ public class AvroOutputDialog extends BaseStepDialog implements StepDialogInterf
           }
           result.add( name );
         }
+        type = null;
       }
 
     }

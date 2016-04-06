@@ -483,7 +483,9 @@ public class AvroOutput extends BaseStep implements StepInterface {
         if( data.dataFileWriter != null ) {
           data.dataFileWriter.close();
         }
-        data.writer.close();
+
+        // Causes exception trying to close file in Java 8.  I believe the flush closes the file also.
+        // data.writer.close();
         data.writer = null;
         data.dataFileWriter = null;
         if ( log.isDebug() ) {
@@ -495,7 +497,8 @@ public class AvroOutput extends BaseStep implements StepInterface {
 
       retval = true;
     } catch ( Exception e ) {
-      logError( "Exception trying to close file: " + e.toString() );
+      //throw new KettleException( "Error trying to close file", e );
+      logError( "Exception trying to close file: " , e );
       setErrors( 1 );
       retval = false;
     }
@@ -530,7 +533,7 @@ public class AvroOutput extends BaseStep implements StepInterface {
     data = (AvroOutputData) sdi;
 
     if ( data.writer != null ) {
-	  closeFile();
+      closeFile();
     }
     data.datumWriter = null;
     data.avroSchema = null;
