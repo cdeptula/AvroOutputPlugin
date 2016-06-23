@@ -21,8 +21,11 @@ import org.pentaho.di.core.CheckResultInterface;
 import org.pentaho.di.core.Const;
 import org.pentaho.di.core.database.DatabaseMeta;
 import org.pentaho.di.core.exception.KettleException;
+import org.pentaho.di.core.exception.KettleStepException;
 import org.pentaho.di.core.exception.KettleXMLException;
 import org.pentaho.di.core.row.RowMetaInterface;
+import org.pentaho.di.core.row.ValueMeta;
+import org.pentaho.di.core.row.ValueMetaInterface;
 import org.pentaho.di.core.variables.VariableSpace;
 import org.pentaho.di.core.xml.XMLHandler;
 import org.pentaho.di.i18n.BaseMessages;
@@ -78,10 +81,16 @@ public class AvroOutputMeta extends BaseStepMeta implements StepMetaInterface {
   public static final String FILE_ADD_DATE = "file_add_date";
   public static final String FILE_ADD_TIME = "file_add_time";
   public static final String FIELD_NAME = "field_name";
+  public static final String OUTPUT_TYPE = "output_type";
+  public static final String OUTPUT_FIELD_NAME = "output_field_name";
   private static Class<?> PKG = AvroOutputMeta.class; // for i18n purposes, needed by Translator2!!
 
   //Avro 1.7.6 supports bzip2 as an additional codec; however, Pentaho is still on Avro 1.6.2.
   public static final String[] compressionTypes = {"none","deflate","snappy"};
+
+  public static final String[] OUTPUT_TYPES = { "BinaryFile", "Field" };
+  public static final int OUTPUT_TYPE_BINARY_FILE = 0;
+  public static final int OUTPUT_TYPE_FIELD = 1;
 
     /** The base name of the output file */
   private String fileName;
@@ -133,6 +142,10 @@ public class AvroOutputMeta extends BaseStepMeta implements StepMetaInterface {
     private boolean specifyingFormat;
 
   private String dateTimeFormat;
+
+  private String outputType;
+
+  private String outputFieldName;
   
   public AvroOutputMeta() {
     super(); // allocate BaseStepMeta
@@ -369,6 +382,41 @@ public class AvroOutputMeta extends BaseStepMeta implements StepMetaInterface {
     this.compressionType = compressionType;
   }
 
+  public String getOutputType() {
+    return outputType;
+  }
+
+  public void setOutputType( String outputType ) {
+    this.outputType = outputType;
+  }
+
+  public int getOutputTypeId() {
+    if( outputType != null ) {
+      for ( int i = 0; i < OUTPUT_TYPES.length; i++ ) {
+        if ( outputType.equals( OUTPUT_TYPES[i] ) ) {
+          return i;
+        }
+      }
+    }
+    return -1;
+  }
+
+  public void setOutputTypeById( int outputTypeId ) {
+    if( outputTypeId >= 0 && outputTypeId < OUTPUT_TYPES.length ) {
+      this.outputType = OUTPUT_TYPES[outputTypeId];
+    } else {
+      this.outputType = null;
+    }
+  }
+
+  public String getOutputFieldName() {
+    return outputFieldName;
+  }
+
+  public void setOutputFieldName( String outputFieldName ) {
+    this.outputFieldName = outputFieldName;
+  }
+
   /**
    * @return Returns the outputFields.
    */
@@ -433,6 +481,11 @@ public class AvroOutputMeta extends BaseStepMeta implements StepMetaInterface {
       timeInFilename = "Y".equalsIgnoreCase( XMLHandler.getTagValue( stepnode, ADD_TIME ) );
       specifyingFormat = "Y".equalsIgnoreCase( XMLHandler.getTagValue( stepnode, SPECIFY_FORMAT ) );
       dateTimeFormat = XMLHandler.getTagValue( stepnode, DATE_TIME_FORMAT );
+      outputType = XMLHandler.getTagValue( stepnode, OUTPUT_TYPE );
+      if ( Const.isEmpty( outputType ) ) {
+        outputType = OUTPUT_TYPES[OUTPUT_TYPE_BINARY_FILE];
+      }
+      outputFieldName = XMLHandler.getTagValue( stepnode, OUTPUT_FIELD_NAME );
 
       String AddToResultFiles = XMLHandler.getTagValue( stepnode, FILE, ADD_TO_RESULT_FILENAMES );
       if ( Const.isEmpty( AddToResultFiles ) ) {
@@ -477,6 +530,8 @@ public class AvroOutputMeta extends BaseStepMeta implements StepMetaInterface {
     timeInFilename = false;
     addToResultFilenames = true;
     compressionType = "none";
+    outputType = OUTPUT_TYPES[OUTPUT_TYPE_BINARY_FILE];
+    outputFieldName = "avro_record";
 
     }
 
@@ -550,6 +605,8 @@ public class AvroOutputMeta extends BaseStepMeta implements StepMetaInterface {
     retval.append( "      " ).append( XMLHandler.addTagValue( ADD_TIME, timeInFilename ) );
     retval.append( "      " ).append( XMLHandler.addTagValue( SPECIFY_FORMAT, specifyingFormat ) );
     retval.append( "      " ).append( XMLHandler.addTagValue( DATE_TIME_FORMAT, dateTimeFormat ) );
+    retval.append( "      " ).append( XMLHandler.addTagValue( OUTPUT_TYPE, outputType ) );
+    retval.append( "      " ).append( XMLHandler.addTagValue( OUTPUT_FIELD_NAME, outputFieldName ) );
 
     retval.append( "      " ).append( XMLHandler.addTagValue( ADD_TO_RESULT_FILENAMES, addToResultFilenames ) );
 
@@ -589,6 +646,11 @@ public class AvroOutputMeta extends BaseStepMeta implements StepMetaInterface {
       timeInFilename = rep.getStepAttributeBoolean( id_step, FILE_ADD_TIME );
       specifyingFormat = rep.getStepAttributeBoolean( id_step, SPECIFY_FORMAT );
       dateTimeFormat = rep.getStepAttributeString( id_step, DATE_TIME_FORMAT );
+      outputType = rep.getStepAttributeString( id_step, OUTPUT_TYPE );
+      if ( Const.isEmpty( outputType ) ) {
+        outputType = OUTPUT_TYPES[OUTPUT_TYPE_BINARY_FILE];
+      }
+      outputFieldName = rep.getStepAttributeString( id_step, OUTPUT_FIELD_NAME );
 
       String AddToResultFiles = rep.getStepAttributeString( id_step, ADD_TO_RESULT_FILENAMES );
       if ( Const.isEmpty( AddToResultFiles ) ) {
@@ -633,6 +695,8 @@ public class AvroOutputMeta extends BaseStepMeta implements StepMetaInterface {
       rep.saveStepAttribute( id_transformation, id_step, FILE_ADD_DATE, dateInFilename );
       rep.saveStepAttribute( id_transformation, id_step, DATE_TIME_FORMAT, dateTimeFormat );
       rep.saveStepAttribute( id_transformation, id_step, SPECIFY_FORMAT, specifyingFormat );
+      rep.saveStepAttribute( id_transformation, id_step, OUTPUT_TYPE, outputType );;
+      rep.saveStepAttribute( id_transformation, id_step, OUTPUT_FIELD_NAME, outputFieldName );
 
       rep.saveStepAttribute( id_transformation, id_step, ADD_TO_RESULT_FILENAMES, addToResultFilenames );
       rep.saveStepAttribute( id_transformation, id_step, FILE_ADD_TIME, timeInFilename );
@@ -721,6 +785,17 @@ public class AvroOutputMeta extends BaseStepMeta implements StepMetaInterface {
   @Override
   public StepMetaInjectionInterface getStepMetaInjectionInterface() {
     return new AvroOutputMetaInjection( this );
+  }
+
+  public void getFields( RowMetaInterface row, String name, RowMetaInterface[] info, StepMeta nextStep,
+                         VariableSpace space, Repository repository, IMetaStore metaStore ) throws KettleStepException {
+    // change the case insensitive flag too
+
+    if ( outputType.equalsIgnoreCase( OUTPUT_TYPES[OUTPUT_TYPE_FIELD] ) ) {
+      ValueMetaInterface v = new ValueMeta( space.environmentSubstitute( outputFieldName ), ValueMetaInterface.TYPE_BINARY );
+      v.setOrigin( name );
+      row.addValueMeta( v );
+    }
   }
 
 

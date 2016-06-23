@@ -19,11 +19,14 @@ package org.openbi.kettle.plugins.avrooutput;
 import org.apache.avro.Schema;
 import org.apache.avro.file.DataFileWriter;
 import org.apache.avro.generic.GenericRecord;
+import org.apache.avro.io.BinaryEncoder;
 import org.apache.avro.io.DatumWriter;
+import org.apache.avro.io.EncoderFactory;
 import org.pentaho.di.core.row.RowMetaInterface;
 import org.pentaho.di.trans.step.BaseStepData;
 import org.pentaho.di.trans.step.StepDataInterface;
 
+import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.text.DateFormatSymbols;
 import java.text.SimpleDateFormat;
@@ -53,6 +56,12 @@ public class AvroOutputData extends BaseStepData implements StepDataInterface {
   public DatumWriter<GenericRecord> datumWriter;
 
   public DataFileWriter<GenericRecord> dataFileWriter;
+
+  public EncoderFactory encoderFactory;
+
+  public BinaryEncoder binaryEncoder;
+
+  public ByteArrayOutputStream byteArrayOutputStream;
 
   public AvroOutputData() {
     super();
