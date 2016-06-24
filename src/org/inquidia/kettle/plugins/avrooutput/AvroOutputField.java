@@ -50,6 +50,10 @@ public class AvroOutputField implements Cloneable, Comparable<AvroOutputField> {
   private String avroName;
 
   @Injection( name = "AVRO_TYPE", group = "OUTPUT_FIELDS" )
+  // This allows for metadata injection to pass in a string name for the Avro Type, while still
+  // maintaining backward compatibility where the Avro Type is stored as a number.
+  private String avroTypeDesc;
+
   private int avroType;
 
   @Injection( name = "NULLABLE", group = "OUTPUT_FIELDS" )
@@ -134,6 +138,9 @@ public class AvroOutputField implements Cloneable, Comparable<AvroOutputField> {
    */
   public int getAvroType()
   {
+    if( avroTypeDesc != null ) {
+      setAvroType( avroTypeDesc );
+    }
 	  return avroType;
   }
 
@@ -143,6 +150,9 @@ public class AvroOutputField implements Cloneable, Comparable<AvroOutputField> {
    */
   public String getAvroTypeDesc()
   {
+    if( avroTypeDesc != null ) {
+      setAvroType( avroTypeDesc );
+    }
     return avroDescriptions[avroType];
   }
 
@@ -202,6 +212,7 @@ public class AvroOutputField implements Cloneable, Comparable<AvroOutputField> {
   public void setAvroType( int avroType )
   {
     this.avroType = avroType;
+    avroTypeDesc = null;
   }
 
   /**
@@ -218,6 +229,7 @@ public class AvroOutputField implements Cloneable, Comparable<AvroOutputField> {
         break;
       }
     }
+    this.avroTypeDesc = null;
   }
 
   public static int getDefaultAvroType( int pentahoType )

@@ -63,7 +63,7 @@ import java.util.List;
  */
 @Step( id = "AvroOutputPlugin", image = "avo.svg", name = "Step.Name", description = "Step.Description",
   categoryDescription = "Category.Description",
-  i18nPackageName = "org.openbi.kettle.plugins.avrooutput",
+  i18nPackageName = "org.inquidia.kettle.plugins.avrooutput",
   documentationUrl = "https://github.com/cdeptula/AvroOutputPlugin",
   casesUrl = "https://github.com/cdeptula/AvroOutputPlugin/issues",
   isSeparateClassLoaderNeeded = true )

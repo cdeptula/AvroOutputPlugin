@@ -1010,8 +1010,10 @@ public class AvroOutputDialog extends BaseStepDialog implements StepDialogInterf
         recordSchema = field.schema();
       }
     }
+    System.out.println( "Avro name is " + avroName );
+    System.out.println( "Record Schema is " + recordSchema.toString( true ) );
     Schema.Field f = recordSchema.getField( avroName );
-    recordSchema = null;
+    // recordSchema = null;
     if( f == null )
     {
       return null;
