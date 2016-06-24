@@ -92,7 +92,8 @@ public class AvroOutputDialog extends BaseStepDialog implements StepDialogInterf
 
   private static final String[] OUTPUT_TYPE_DESC = new String[] {
     BaseMessages.getString( PKG, "AvroOutputDialog.OutputType.BinaryFile" ),
-    BaseMessages.getString( PKG, "AvroOutputDialog.OutputType.BinaryField" ) };
+    BaseMessages.getString( PKG, "AvroOutputDialog.OutputType.BinaryField" ),
+    BaseMessages.getString( PKG, "AvroOutputDialog.OutputType.JsonField" ) };
 
   private CTabFolder wTabFolder;
   private FormData fdTabFolder;
@@ -1152,7 +1153,8 @@ public class AvroOutputDialog extends BaseStepDialog implements StepDialogInterf
       wSpecifyFormat.setEnabled( true );
       wDateTimeFormat.setEnabled( true );
       wOutputField.setEnabled( false );
-    } else if( outputTypeId == AvroOutputMeta.OUTPUT_TYPE_FIELD ) {
+    } else if( outputTypeId == AvroOutputMeta.OUTPUT_TYPE_FIELD
+        || outputTypeId == AvroOutputMeta.OUTPUT_TYPE_JSON_FIELD ) {
       wFilename.setEnabled( false );
       wCompression.setEnabled( false );
       wAddStepnr.setEnabled( false );

@@ -30,6 +30,7 @@ import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.io.BinaryEncoder;
 import org.apache.avro.io.DatumWriter;
 import org.apache.avro.io.EncoderFactory;
+import org.apache.avro.io.JsonEncoder;
 import org.pentaho.di.core.row.RowMetaInterface;
 import org.pentaho.di.trans.step.BaseStepData;
 import org.pentaho.di.trans.step.StepDataInterface;
@@ -68,6 +69,8 @@ public class AvroOutputData extends BaseStepData implements StepDataInterface {
   public EncoderFactory encoderFactory;
 
   public BinaryEncoder binaryEncoder;
+
+  public JsonEncoder jsonEncoder;
 
   public ByteArrayOutputStream byteArrayOutputStream;
 

@@ -27,6 +27,7 @@ package org.openbi.kettle.plugins.avrooutput;
 
 import org.apache.avro.Schema;
 import org.pentaho.di.core.exception.KettleException;
+import org.pentaho.di.core.injection.Injection;
 import org.pentaho.di.core.row.ValueMetaInterface;
 
 import java.util.ArrayList;
@@ -42,13 +43,16 @@ import java.util.List;
  */
 public class AvroOutputField implements Cloneable, Comparable<AvroOutputField> {
 	
-
+  @Injection( name = "STREAM_NAME", group = "OUTPUT_FIELDS" )
   private String name;
-  
+
+  @Injection( name = "AVRO_PATH", group = "OUTPUT_FIELDS" )
   private String avroName;
 
+  @Injection( name = "AVRO_TYPE", group = "OUTPUT_FIELDS" )
   private int avroType;
 
+  @Injection( name = "NULLABLE", group = "OUTPUT_FIELDS" )
   private boolean nullable;
 
   public final static int AVRO_TYPE_NONE = 0;

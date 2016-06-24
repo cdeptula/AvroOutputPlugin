@@ -32,6 +32,9 @@ import org.pentaho.di.core.database.DatabaseMeta;
 import org.pentaho.di.core.exception.KettleException;
 import org.pentaho.di.core.exception.KettleStepException;
 import org.pentaho.di.core.exception.KettleXMLException;
+import org.pentaho.di.core.injection.Injection;
+import org.pentaho.di.core.injection.InjectionDeep;
+import org.pentaho.di.core.injection.InjectionSupported;
 import org.pentaho.di.core.row.RowMetaInterface;
 import org.pentaho.di.core.row.ValueMeta;
 import org.pentaho.di.core.row.ValueMetaInterface;
@@ -65,6 +68,7 @@ import java.util.List;
   documentationUrl = "https://github.com/cdeptula/AvroOutputPlugin",
   casesUrl = "https://github.com/cdeptula/AvroOutputPlugin/issues",
   isSeparateClassLoaderNeeded = true )
+@InjectionSupported( localizationPrefix = "AvroOutput.Injection.", groups = { "OUTPUT_FIELDS" } )
 public class AvroOutputMeta extends BaseStepMeta implements StepMetaInterface {
   public static final String CREATE_PARENT_FOLDER = "create_parent_folder";
   public static final String WRITE_SCHEMA_FILE = "write_schema_file";
@@ -103,63 +107,83 @@ public class AvroOutputMeta extends BaseStepMeta implements StepMetaInterface {
   //Avro 1.7.6 supports bzip2 as an additional codec; however, Pentaho is still on Avro 1.6.2.
   public static final String[] compressionTypes = {"none","deflate","snappy"};
 
-  public static final String[] OUTPUT_TYPES = { "BinaryFile", "Field" };
+  public static final String[] OUTPUT_TYPES = { "BinaryFile", "BinaryField", "JsonField" };
   public static final int OUTPUT_TYPE_BINARY_FILE = 0;
   public static final int OUTPUT_TYPE_FIELD = 1;
+  public static final int OUTPUT_TYPE_JSON_FIELD = 2;
 
-    /** The base name of the output file */
+  /** The base name of the output file */
+  @Injection( name = "FILENAME" )
   private String fileName;
 
   /** The base name of the schema file */
+  @Injection( name = "SCHEMA_FILENAME" )
   private String schemaFileName;
 
   /** Flag: create schema file, default to false */
+  @Injection( name = "AUTO_CREATE_SCHEMA" )
   private boolean createSchemaFile = false;
 
   /** Flag: write schema file, default to true */
+  @Injection( name = "WRITE_SCHEMA_TO_FILE" )
   private boolean writeSchemaFile = true;
 
   /** The namespace for the schema file */
+  @Injection( name = "AVRO_NAMESPACE" )
   private String namespace;
 
   /** The record name for the schema file */
+  @Injection( name = "AVRO_RECORD_NAME" )
   private String recordName;
 
   /** The documentation for the schema file */
+  @Injection( name = "AVRO_DOC" )
   private String doc;
 
   /** Flag: create parent folder, default to true */
+  @Injection( name = "CREATE_PARENT_FOLDER" )
   private boolean createParentFolder = true;
 
   /** Flag: add the stepnr in the filename */
+  @Injection( name = "INCLUDE_STEPNR" )
   private boolean stepNrInFilename;
 
   /** Flag: add the partition number in the filename */
+  @Injection( name = "INCLUDE_PARTNR" )
   private boolean partNrInFilename;
 
   /** Flag: add the date in the filename */
+  @Injection( name = "INCLUDE_DATE" )
   private boolean dateInFilename;
 
   /** Flag: add the time in the filename */
+  @Injection( name = "INCLUDE_TIME" )
   private boolean timeInFilename;
 
   /** The compression type */
+  @Injection( name = "COMPRESSION_CODEC" )
   private String compressionType;
 
     /* THE FIELD SPECIFICATIONS ... */
 
   /** The output fields */
+  @InjectionDeep
   private AvroOutputField[] outputFields;
 
   /** Flag: add the filenames to result filenames */
+  @Injection( name = "ADD_TO_RESULT" )
   private boolean addToResultFilenames;
 
-    private boolean specifyingFormat;
+  @Injection( name = "SPECIFY_FORMAT" )
+  private boolean specifyingFormat;
 
+  @Injection( name = "DATE_FORMAT" )
   private String dateTimeFormat;
 
+  @Injection( name = "OUTPUT_TYPE" )
   private String outputType;
 
+  @Injection( name = "OUTPUT_FIELD_NAME" )
   private String outputFieldName;
   
   public AvroOutputMeta() {
@@ -810,6 +834,10 @@ public class AvroOutputMeta extends BaseStepMeta implements StepMetaInterface {
       ValueMetaInterface v = new ValueMeta( space.environmentSubstitute( outputFieldName ), ValueMetaInterface.TYPE_BINARY );
       v.setOrigin( name );
       row.addValueMeta( v );
+    } else if ( outputType.equalsIgnoreCase( OUTPUT_TYPES[OUTPUT_TYPE_JSON_FIELD] ) ) {
+      ValueMetaInterface valueMetaInterface = new ValueMeta( space.environmentSubstitute( outputFieldName ), ValueMetaInterface.TYPE_STRING );
+      valueMetaInterface.setOrigin( name );
+      row.addValueMeta( valueMetaInterface );
     }
   }
 

@@ -329,6 +329,10 @@ public class AvroOutput extends BaseStep implements StepInterface {
             data.dataFileWriter.setCodec( CodecFactory.fromString( meta.getCompressionType() ) );
           }
           data.dataFileWriter.create( data.avroSchema, data.writer );
+        } else if ( meta.getOutputType().equals( AvroOutputMeta.OUTPUT_TYPES[AvroOutputMeta.OUTPUT_TYPE_JSON_FIELD] ) ) {
+          data.encoderFactory = new EncoderFactory();
+          data.byteArrayOutputStream = new ByteArrayOutputStream();
+          data.jsonEncoder = data.encoderFactory.jsonEncoder( data.avroSchema, data.byteArrayOutputStream );
         } else {
           throw new KettleException( "Invalid output type " + meta.getOutputType() );
         }
@@ -363,6 +367,7 @@ public class AvroOutput extends BaseStep implements StepInterface {
       if ( meta.getOutputType().equals( AvroOutputMeta.OUTPUT_TYPES[AvroOutputMeta.OUTPUT_TYPE_FIELD] ) ) {
         try {
           data.binaryEncoder = null;
+          data.jsonEncoder = null;
           if( data.byteArrayOutputStream != null ) {
             data.byteArrayOutputStream.close();
           }
@@ -391,11 +396,15 @@ public class AvroOutput extends BaseStep implements StepInterface {
         data.binaryEncoder.flush();
         data.byteArrayOutputStream.flush();
         RowDataUtil.addValueData( r, data.outputRowMeta.size() - 1, data.byteArrayOutputStream.toByteArray() );
-        logBasic( "Row size " + data.outputRowMeta.size() );
-        logBasic( "Data " + data.byteArrayOutputStream.toString() );
         data.byteArrayOutputStream.close();
         data.byteArrayOutputStream.reset();
-        // data.byteArrayOutputStream = new ByteArrayOutputStream();
+      } else if ( meta.getOutputType().equals( AvroOutputMeta.OUTPUT_TYPES[AvroOutputMeta.OUTPUT_TYPE_JSON_FIELD] ) ) {
+        data.datumWriter.write( row, data.jsonEncoder );
+        data.jsonEncoder.flush();
+        data.byteArrayOutputStream.flush();
+        RowDataUtil.addValueData( r, data.outputRowMeta.size() - 1, data.byteArrayOutputStream.toString() );
+        data.byteArrayOutputStream.close();
+        data.byteArrayOutputStream.reset();
       }
     } catch ( IOException i ) {
       throw new KettleException( i );
