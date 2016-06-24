@@ -29,7 +29,12 @@ Usage
 Arrays are not supported by this step.  It is currently not possible to output an Avro array using the Avro Output Plugin.  All other Avro types are supported including complex records.
 
 **File Tab**
+* Output Type
+  - Binary file - Outputs to an Avro file using binary encoding
+  - Binary message - Outputs the data as an Avro binary encoded message on the stream
+  - JSON message - Outputs the data as an Avro JSON encoded message on the stream
 * Filename - The name of the file to output
+* Output Field - The field on the stream to output the encoded message
 * Automatically create schema? - Should the step automatically create the schema for the output records?
 * Write schema to file? - Should the step persist the automatically created schema to a file?
 * Avro namespace - The namespace for the automatically created schema.
@@ -54,10 +59,7 @@ Arrays are not supported by this step.  It is currently not possible to output a
 
 Building from Source
 ---
-The Avro Output Plugin is built using Ant.  Since I do not want to deal with the complexities of Ivy the following instructions must be followed before building this plugin.
+The Avro Output Plugin is built using Ant and requires both Ivy and Maven to also be installed.
 
-1. Edit the build.properties file.
-2. Set pentahoclasspath to the data-integration/lib directory on your machine.
-3. Set the pentahoswtclasspath to the data-integration/libswt directory on your machine.
-4. Set the pentahobigdataclasspath to the data-integration/plugins/pentaho-big-data-plugin/lib directory on your machine.
-5. Run "ant dist" to build the plugin.
+1. Edit the build.properties file and set the Pentaho version you wish to build the plugin for.
+5. Run "ant clean-all resolve resolve-default dist" to build the plugin.
