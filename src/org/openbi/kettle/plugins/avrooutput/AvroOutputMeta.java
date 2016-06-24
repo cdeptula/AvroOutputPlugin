@@ -49,7 +49,6 @@ import org.pentaho.di.trans.step.BaseStepMeta;
 import org.pentaho.di.trans.step.StepDataInterface;
 import org.pentaho.di.trans.step.StepInterface;
 import org.pentaho.di.trans.step.StepMeta;
-import org.pentaho.di.trans.step.StepMetaInjectionInterface;
 import org.pentaho.di.trans.step.StepMetaInterface;
 import org.pentaho.metastore.api.IMetaStore;
 import org.w3c.dom.Node;
@@ -819,11 +818,6 @@ public class AvroOutputMeta extends BaseStepMeta implements StepMetaInterface {
 
   public void setFilename( String fileName ) {
     this.fileName = fileName;
-  }
-
-  @Override
-  public StepMetaInjectionInterface getStepMetaInjectionInterface() {
-    return new AvroOutputMetaInjection( this );
   }
 
   public void getFields( RowMetaInterface row, String name, RowMetaInterface[] info, StepMeta nextStep,
