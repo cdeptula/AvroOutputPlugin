@@ -19,6 +19,7 @@ package org.openbi.kettle.plugins.avrooutput;
 import org.pentaho.di.core.CheckResult;
 import org.pentaho.di.core.CheckResultInterface;
 import org.pentaho.di.core.Const;
+import org.pentaho.di.core.annotations.Step;
 import org.pentaho.di.core.database.DatabaseMeta;
 import org.pentaho.di.core.exception.KettleException;
 import org.pentaho.di.core.exception.KettleStepException;
@@ -50,6 +51,12 @@ import java.util.List;
  * Created on 4-apr-2003
  * @author Inquidia Consulting
  */
+@Step( id = "AvroOutputPlugin", image = "avo.svg", name = "Step.Name", description = "Step.Description",
+  categoryDescription = "Category.Description",
+  i18nPackageName = "org.openbi.kettle.plugins.avrooutput",
+  documentationUrl = "https://github.com/cdeptula/AvroOutputPlugin",
+  casesUrl = "https://github.com/cdeptula/AvroOutputPlugin/issues",
+  isSeparateClassLoaderNeeded = true )
 public class AvroOutputMeta extends BaseStepMeta implements StepMetaInterface {
   public static final String CREATE_PARENT_FOLDER = "create_parent_folder";
   public static final String WRITE_SCHEMA_FILE = "write_schema_file";

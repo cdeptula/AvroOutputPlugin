@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ivy-module version="2.0" xmlns:m="http://ant.apache.org/ivy/maven">
+  <info organisation="${ivy.artifact.group}" module="${ivy.artifact.id}" revision="${project.revision}" status="plugin"/>
+
+  <configurations>
+    <conf name="default"/>
+    <conf name="dev"/>
+    <conf name="test" visibility="private"/>
+    <conf name="source"/>
+    <conf name="zip" />
+  </configurations>
+
+  <publications>
+    <artifact name="${ivy.artifact.id}" type="jar" conf="default" />
+    <artifact name="${package.id}" type="zip" conf="zip" />
+  </publications>
+
+  <!-- 
+    To keep this file short, the default Ivy configuration is "dev" rather than "default". The "default" configuration
+    should be used when you have dependencies that will NOT be provided by Kettle.
+  -->
+  <dependencies defaultconf="dev->default">
+  
+    <!-- Third-party dependencies (Apache, etc.) -->
+    <dependency org="commons-io" name="commons-io" rev="${dependency.commons-io.revision}" transitive="false"/>
+    <dependency org="org.apache.commons" name="commons-vfs2" rev="${dependency.commons-vfs.revision}" transitive="false"/>
+    
+    <!-- Pentaho dependencies (Kettle modules, etc.) -->            
+    <dependency org="pentaho-kettle" name="kettle-core"      rev="${dependency.kettle.revision}"      changing="true"/>  
+    <dependency org="pentaho-kettle" name="kettle-engine"    rev="${dependency.kettle.revision}"      changing="true"/>
+    <dependency org="pentaho-kettle" name="kettle-ui-swt"    rev="${dependency.kettle.revision}"      changing="true"/>
+    <dependency org="pentaho"        name="pentaho-xul-core" rev="${dependency.pentaho-xul.revision}" changing="true"/>
+    <dependency org="pentaho"        name="pentaho-xul-swt"  rev="${dependency.pentaho-xul.revision}" changing="true"/>
+    
+    <!-- Test dependencies (JUnit, etc.) These should use the test configuration -->
+    <dependency org="junit" name="junit" rev="${dependency.junit.revision}" transitive="false" conf="test->default"/>
+	<dependency org="org.mockito"              name="mockito-all"          rev="1.8.4"  transitive="false" conf="test->default"/>
+	<dependency org="pentaho-kettle" name="kettle-engine-test" rev="${dependency.kettle.revision}" changing="true" transitive="false" conf="test->default" />
+
+    <!-- https://mvnrepository.com/artifact/org.apache.avro/avro -->
+    <dependency org="org.apache.avro" name="avro" rev="${dependency.avro.revision}" conf="default" />
+
+  </dependencies>
+
+</ivy-module>
