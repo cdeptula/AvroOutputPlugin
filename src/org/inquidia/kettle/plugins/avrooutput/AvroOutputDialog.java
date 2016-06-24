@@ -22,7 +22,7 @@
 *
 ******************************************************************************/
 
-package org.openbi.kettle.plugins.avrooutput;
+package org.inquidia.kettle.plugins.avrooutput;
 
 import org.apache.avro.Schema;
 import org.eclipse.jface.dialogs.MessageDialog;

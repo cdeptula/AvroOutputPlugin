@@ -22,7 +22,7 @@
 *
 ******************************************************************************/
 
-package org.openbi.kettle.plugins.avrooutput;
+package org.inquidia.kettle.plugins.avrooutput;
 
 import org.pentaho.di.core.CheckResult;
 import org.pentaho.di.core.CheckResultInterface;
