@@ -992,33 +992,32 @@ public class AvroOutputDialog extends BaseStepDialog implements StepDialogInterf
 
   private Schema getFieldSchema( String avroName )
   {
-    if( avroName.startsWith( "$." ) )
-    {
-      avroName = avroName.substring( 2 );
-    }
-
-    Schema recordSchema = avroSchema;
-    while( avroName.contains( "." ) )
-    {
-      String parentRecord = avroName.substring( 0, avroName.indexOf( "." ) );
-      avroName = avroName.substring( avroName.indexOf( "." )+1 );
-      Schema.Field field = recordSchema.getField( parentRecord );
-      if( field == null )
-      {
-        return null;
-      } else {
-        recordSchema = field.schema();
+    if( avroSchema != null ) {
+      if ( avroName.startsWith( "$." ) ) {
+        avroName = avroName.substring( 2 );
       }
+
+      Schema recordSchema = avroSchema;
+      while ( avroName.contains( "." ) ) {
+        String parentRecord = avroName.substring( 0, avroName.indexOf( "." ) );
+        avroName = avroName.substring( avroName.indexOf( "." ) + 1 );
+        Schema.Field field = recordSchema.getField( parentRecord );
+        if ( field == null ) {
+          return null;
+        } else {
+          recordSchema = field.schema();
+        }
+      }
+      System.out.println( "Avro name is " + avroName );
+      System.out.println( "Record Schema is " + recordSchema.toString( true ) );
+      Schema.Field f = recordSchema.getField( avroName );
+      // recordSchema = null;
+      if ( f == null ) {
+        return null;
+      }
+      return f.schema();
     }
-    System.out.println( "Avro name is " + avroName );
-    System.out.println( "Record Schema is " + recordSchema.toString( true ) );
-    Schema.Field f = recordSchema.getField( avroName );
-    // recordSchema = null;
-    if( f == null )
-    {
-      return null;
-    }
-    return f.schema();
+    return null;
   }
 
 
@@ -1034,7 +1033,6 @@ public class AvroOutputDialog extends BaseStepDialog implements StepDialogInterf
       wFields.setColumnInfo( 1, new ColumnInfo(
         BaseMessages.getString( PKG, "AvroOutputDialog.AvroColumn.Column" ),
         ColumnInfo.COLUMN_TYPE_CCOMBO, getSchemaFields(), false ) );
-      avroSchema = null;
     } catch (Exception ex) {
       validSchema = false;
       avroSchema = null;
@@ -1424,7 +1422,7 @@ public class AvroOutputDialog extends BaseStepDialog implements StepDialogInterf
         String avroName = !( tableItem.getText( 2 ).isEmpty() ) ? tableItem.getText( 2 ) : tableItem.getText( 1 );
         String streamName = tableItem.getText( 1 );
         logBasic("Stream name is "+streamName );
-        if ( !( avroName.isEmpty() ) && !( createSchemaFile ) ) {
+        if ( !( avroName.isEmpty() ) && !( createSchemaFile ) && avroSchema != null ) {
           Schema fieldSchema = getFieldSchema( avroName );
           if ( fieldSchema != null ) {
             String[] types = AvroOutputField.mapAvroType( fieldSchema, fieldSchema.getType() );
