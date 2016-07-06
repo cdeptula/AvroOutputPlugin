@@ -66,7 +66,7 @@ import java.util.List;
   i18nPackageName = "org.inquidia.kettle.plugins.avrooutput",
   documentationUrl = "https://github.com/cdeptula/AvroOutputPlugin",
   casesUrl = "https://github.com/cdeptula/AvroOutputPlugin/issues",
-  isSeparateClassLoaderNeeded = true )
+  isSeparateClassLoaderNeeded = false )
 @InjectionSupported( localizationPrefix = "AvroOutput.Injection.", groups = { "OUTPUT_FIELDS" } )
 public class AvroOutputMeta extends BaseStepMeta implements StepMetaInterface {
   public static final String CREATE_PARENT_FOLDER = "create_parent_folder";
