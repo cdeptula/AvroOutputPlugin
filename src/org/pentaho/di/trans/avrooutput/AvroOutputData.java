@@ -22,7 +22,7 @@
 *
 ******************************************************************************/
 
-package org.inquidia.kettle.plugins.avrooutput;
+package org.pentaho.di.trans.avrooutput;
 
 import org.apache.avro.Schema;
 import org.apache.avro.file.DataFileWriter;

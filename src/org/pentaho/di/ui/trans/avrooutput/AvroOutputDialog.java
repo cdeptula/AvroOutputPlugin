@@ -22,7 +22,7 @@
 *
 ******************************************************************************/
 
-package org.inquidia.kettle.plugins.avrooutput;
+package org.pentaho.di.ui.trans.avrooutput;
 
 import org.apache.avro.Schema;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -80,6 +80,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.pentaho.di.trans.avrooutput.AvroOutputField;
+import org.pentaho.di.trans.avrooutput.AvroOutputMeta;
 
 /**
  * @author Inquidia Consulting
