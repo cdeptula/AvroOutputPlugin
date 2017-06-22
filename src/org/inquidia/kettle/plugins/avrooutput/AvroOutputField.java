@@ -42,7 +42,7 @@ import java.util.List;
  *
  */
 public class AvroOutputField implements Cloneable, Comparable<AvroOutputField> {
-	
+
   @Injection( name = "STREAM_NAME", group = "OUTPUT_FIELDS" )
   private String name;
 
@@ -66,8 +66,9 @@ public class AvroOutputField implements Cloneable, Comparable<AvroOutputField> {
   public final static int AVRO_TYPE_INT = 4;
   public final static int AVRO_TYPE_LONG = 5;
   public final static int AVRO_TYPE_STRING = 6;
+  public final static int AVRO_TYPE_ENUM = 7;
 
-  private static String[] avroDescriptions = {"","Boolean","Double","Float","Int","Long","String"};
+  private static String[] avroDescriptions = {"","Boolean","Double","Float","Int","Long","String", "Enum"};
 
   public AvroOutputField( String name, String avroName, int avroType, boolean nullable ) {
     this.name = name;
@@ -78,7 +79,7 @@ public class AvroOutputField implements Cloneable, Comparable<AvroOutputField> {
 
   public AvroOutputField() {
   }
-  
+
   public int compare( Object obj ) {
     AvroOutputField field = (AvroOutputField) obj;
 
@@ -262,6 +263,8 @@ public class AvroOutputField implements Cloneable, Comparable<AvroOutputField> {
         return Schema.Type.LONG;
       case AVRO_TYPE_STRING :
         return Schema.Type.STRING;
+      case AVRO_TYPE_ENUM :
+          return Schema.Type.ENUM;
       default :
         throw new KettleException( "Unsupported Avro Type " + avroDescriptions[ avroType ] );
     }
@@ -289,6 +292,9 @@ public class AvroOutputField implements Cloneable, Comparable<AvroOutputField> {
       case STRING :
         avroTypeDesc[0] = avroDescriptions[AVRO_TYPE_STRING];
         break;
+      case ENUM :
+          avroTypeDesc[0] = avroDescriptions[AVRO_TYPE_ENUM];
+          break;
       case UNION:
         List<Schema> schemas = schema.getTypes();
         Iterator<Schema> it = schemas.iterator();
