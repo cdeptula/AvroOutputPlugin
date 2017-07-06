@@ -25,11 +25,14 @@
 package org.inquidia.kettle.plugins.avrooutput;
 
 import org.apache.avro.Schema;
+import org.apache.avro.Schema.Field;
+import org.apache.avro.Schema.Type;
 import org.apache.avro.file.CodecFactory;
 import org.apache.avro.file.DataFileWriter;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericDatumWriter;
 import org.apache.avro.generic.GenericRecord;
+import org.apache.avro.generic.GenericData.EnumSymbol;
 import org.apache.avro.io.EncoderFactory;
 import org.apache.commons.vfs2.FileObject;
 import org.pentaho.di.core.Const;
@@ -123,7 +126,8 @@ public class AvroOutput extends BaseStep implements StepInterface {
           GenericRecord fieldRecord = getRecord( r, childPath, childSchema );
           result.put( currentAvroPath, fieldRecord );
         } else {
-          Object value = getValue( r, meta.getOutputFields()[outputFieldIndex], data.fieldnrs[outputFieldIndex] );
+          Field avroField =  recordSchema.getField(avroName);
+          Object value = getValue( r, meta.getOutputFields()[outputFieldIndex], data.fieldnrs[outputFieldIndex] , avroField);
           if ( value != null ) {
             result.put( avroName, value );
           }
@@ -423,7 +427,7 @@ public class AvroOutput extends BaseStep implements StepInterface {
     return result;
   }
 
-  public Object getValue( Object[] r, AvroOutputField outputField, int inputFieldIndex ) throws KettleException {
+  public Object getValue( Object[] r, AvroOutputField outputField, int inputFieldIndex , Field fieldSchema) throws KettleException {
     Object value;
 
     switch ( outputField.getAvroType() ) {
@@ -445,6 +449,11 @@ public class AvroOutput extends BaseStep implements StepInterface {
       case AvroOutputField.AVRO_TYPE_BOOLEAN:
         value = data.outputRowMeta.getBoolean( r, inputFieldIndex );
         break;
+      case AvroOutputField.AVRO_TYPE_ENUM:
+          Schema schema = getFirstEnumSchema(fieldSchema);
+          String fieldValue =  data.outputRowMeta.getString( r, inputFieldIndex );
+          value = new GenericData.EnumSymbol(schema , fieldValue);
+          break;
       default:
         throw new KettleException( "Avro type " + outputField.getAvroTypeDesc() + " is not supported for field " + outputField.getAvroName() + "." );
     }
@@ -452,7 +461,24 @@ public class AvroOutput extends BaseStep implements StepInterface {
     return value;
   }
 
-  public String buildFilename( String filename, boolean ziparchive ) {
+  private Schema getFirstEnumSchema(Field field) {
+      Schema fieldSchema = field.schema();
+      Type fieldType = fieldSchema.getType();
+      if (fieldType == Type.ENUM) {
+          return fieldSchema;
+      }
+      if (fieldType == Type.UNION) {
+          List<Schema> subSchemas = fieldSchema.getTypes();
+          for (Schema subSchema : subSchemas) {
+            if (subSchema.getType() == Type.ENUM) {
+                return subSchema;
+            }
+        }
+      }
+      return field.schema();
+  }
+
+public String buildFilename( String filename, boolean ziparchive ) {
     return meta.buildFilename(
       filename, this, getCopy(), getPartitionID(), data.splitnr, ziparchive, meta );
   }
