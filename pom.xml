@@ -3,7 +3,7 @@
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.inquidia.kettle.plugins</groupId>
-    <artifactId>avro-output-plugin</artifactId>
+    <artifactId>AvroOutputPlugin</artifactId>
     <version>TRUNK-SNAPSHOT</version>
     <name>Avro Output Plug-In for Pentaho</name>
 
